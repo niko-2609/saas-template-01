@@ -23,8 +23,8 @@ export default function Layout({ children }: {children: React.ReactNode}) {
             <Link href="/about">
               <Button variant="ghost">About</Button>
             </Link>
-            <Link href="/contact">
-              <Button variant="ghost">Contact</Button>
+            <Link href="/pricing">
+              <Button variant="ghost">Pricing</Button>
             </Link>
             <DropdownMenu>
               <DropdownMenuTrigger style={{outlineWidth: 0}}>
