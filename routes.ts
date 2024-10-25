@@ -6,6 +6,7 @@
 export const publicRoutes: string[] = [
     "/",
     "/sign-in",
+    "/about"
 ]
 
 
@@ -15,7 +16,7 @@ export const publicRoutes: string[] = [
  * @type {string[]}
  */
 export const authRoutes: string[] = [
-    "/sign-in",
+    "/auth/sign-in",
     "/sign-up",
 ]
 
