@@ -1,4 +1,4 @@
-import { Metadata } from "next"
+"use client"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -10,11 +10,6 @@ import travelLogin from "@/assets/travel-login.jpg"
 import MobileForm from "@/features/authentication/_components/mobile-form"
 
 
-export const metadata: Metadata = {
-  title: "Authentication",
-  description: "Authentication forms built using the components.",
-}
-
 export default function AuthenticationPage() {
   return (
     <>
@@ -22,7 +17,7 @@ export default function AuthenticationPage() {
         <MobileForm />
       </div>
       <div className="container relative hidden flex-col h-screen items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
-        <div className="relative hidden h-full flex-col p-10 dark:border-r lg:flex">
+        <div className="relative hidden h-full flex-col p-10 dark:border-r md:flex">
           <div className="absolute inset-0" />
           <div className="w-[900px]">
             <Image
