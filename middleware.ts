@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use server"
 
@@ -10,19 +11,43 @@ import {
     apiAuthPrefix,
     DEFAULT_PUBLIC_REDIRECT
 } from "@/routes"
-import { NextResponse } from "next/server"
- 
+import { NextRequest, NextResponse } from "next/server"
+// import { createCsrfMiddleware } from '@edge-csrf/nextjs';
+// import { getExpectedToken } from "./features/authentication/server/verification"
 
+// // initalize csrf protection middleware
+// const csrfMiddleware = createCsrfMiddleware({
+//     cookie: {
+//         secure: process.env.NODE_ENV === 'production',
+//     },
+// });
 
-const { auth } = NextAuth(authConfig)
+const { auth } = NextAuth(authConfig);
 
 // The actual middleware function that is invoked by a route
 export default auth((req) => {
 
-    // get the url and user authentication status from the request  
+    const response = NextResponse.next();
+    // // get the url and user authentication status from the request  
     const { nextUrl } = req
-    const isLoggedIn = !!req.auth
 
+    // const cookies = await csrfMiddleware(req);
+
+    // const csrfSecret = req.cookies['_csrfSecret']; // Get the CSRF secret stored as a cookie
+    // const clientCsrfToken = req.headers['x-csrf-token']; // CSRF token sent in headers
+
+    // const expectedToken = getExpectedToken(csrfSecret)
+
+    // if (clientCsrfToken !== expectedToken) {
+    //     // CSRF tokens does not match
+    //     console.log('CSRF token mismatch')
+    //     return NextResponse.redirect(new URL(DEFAULT_PUBLIC_REDIRECT, nextUrl));
+    //     //  res.status(200).json({ message: 'CSRF token verified' });
+    // } 
+    
+
+
+    const isLoggedIn = !!req.auth
 
     // check which route is the request incoming 
     const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
@@ -45,6 +70,7 @@ export default auth((req) => {
     }
     return NextResponse.next();
 })
+
 
 // Regular expression to match all the routes that will invoke the middleware.
 // Here all the routes will invoke the middleware

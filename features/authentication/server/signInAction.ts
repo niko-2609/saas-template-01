@@ -4,6 +4,8 @@
 import { signIn, signOut } from "@/auth"
 import { DEFAULT_LOGIN_REDIRECT, DEFAULT_PUBLIC_REDIRECT } from "@/routes"
 
+
+
 export const googleSignIn = async () => {
     try {
         await signIn("Google",

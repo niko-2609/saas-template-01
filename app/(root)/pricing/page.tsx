@@ -2,23 +2,31 @@
 // pages/pricing.js
 "use client"
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
+import { getPlans } from '@/features/payments/server/plans';
+import PlanCard from '@/features/payments/_components/planCard';
 
 export default function Pricing() {
-  const [selectedCard, setSelectedCard] = useState('basic');
-
-  const handleSelect = (plan: any) => {
-    if (selectedCard === plan) {
-      console.log('Proceeding with payment for plan:', plan);
-      // Add your payment logic here, for example:
-      // initiatePayment(plan);
-    } else {
-      setSelectedCard(plan);
-    }
+  
+  const [plans, setPlans] = useState<any>([])
+  const [selectedCard, setSelectedCard] = useState('standard');
+  const handleSelect = (planType: any) => {
+      if (selectedCard === planType) {
+          console.log('Proceeding with payment for plan:', planType);
+          // Add your payment logic here, for example:
+          // initiatePayment(plan);
+      } else {
+          setSelectedCard(planType);
+      }
   };
 
+  useEffect(() => {
+    const getAllPlans = async () => {
+      const plans = await getPlans();
+      setPlans(plans)
+    }
+    getAllPlans();
+  }, []) 
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       {/* Pricing Page Header */}
@@ -34,38 +42,10 @@ export default function Pricing() {
       {/* Pricing Cards */}
       <div className="flex flex-col md:flex-row gap-6 justify-center">
         {/* Basic Plan Card */}
-        <Card
-          className={`w-full md:w-[45%] transform transition-all duration-300 ${
-            selectedCard === 'basic' ? 'scale-105 z-10 shadow-lg' : 'scale-100'
-          }`}
-        >
-          <CardHeader>
-            <h3 className="text-lg font-bold">Basic</h3>
-            <CardTitle className="text-2xl font-semibold">$29.99 / month</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Ideal for small businesses
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-2">
-              <li>✔️ 10 AI Queries / day</li>
-              <li>✔️ Basic Support</li>
-              <li>✔️ Access to core features</li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button
-              variant={selectedCard === 'basic' ? 'primary' : 'outline'}
-              className="w-full"
-              onClick={() => handleSelect('basic')}
-            >
-              {selectedCard === 'basic' ? 'Proceed to Payment' : 'Select Plan'}
-            </Button>
-          </CardFooter>
-        </Card>
+      {plans.map((plan: any) => <PlanCard key={plan.id} plan={plan} handleSelect={handleSelect} selectedCard={selectedCard}/> )}
 
         {/* Pro Plan Card */}
-        <Card
+        {/* <Card
           className={`w-full md:w-[45%] transform transition-all duration-300 ${
             selectedCard === 'pro' ? 'scale-105 z-10 shadow-lg' : 'scale-100'
           }`}
@@ -93,7 +73,7 @@ export default function Pricing() {
               {selectedCard === 'pro' ? 'Proceed to Payment' : 'Select Plan'}
             </Button>
           </CardFooter>
-        </Card>
+        </Card> */}
       </div>
     </div>
   );
