@@ -1,7 +1,7 @@
 import NextAuth from "next-auth"
 import authConfig from "./auth.config"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import { db } from "@/features/authentication/db/db"
+import { db } from "@/features/db/db"
 import { Adapter } from "next-auth/adapters"
 import Resend from "next-auth/providers/resend"
 

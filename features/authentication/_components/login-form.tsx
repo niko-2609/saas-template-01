@@ -60,7 +60,10 @@ export function LoginForm({ className, ...props }: any) {
   const handleSignIn = async () => {
     console.log("GOOGLE CLICKED SIGN IN BUTTON")
     startTransition(async () => {
-      signIn("google")
+      signIn("google", {
+        callbackUrl: "/dashboard",
+        redirect: true,
+      })
     })
    
   }
