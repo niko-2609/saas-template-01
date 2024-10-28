@@ -22,6 +22,7 @@ model User {
   image         String?  // Corresponds to TEXT
   role          AuthRole @default(USER) // Enum with default 'USER'
   accounts      Account[] // One-to-many relationship with Account model
+  payments      Payment[] // One-to-many relationship with Payment model
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
@@ -59,4 +60,30 @@ model VerificationToken {
 
   @@unique([identifier, token])
   @@map("verification_token") // Maps the model to the "verification_token" table
+}
+
+
+model Payment {
+  id            String    @id @default(uuid()) // Corresponds to UUID in SQL
+  paymentId     String    @unique              // Unique identifier for the payment (could correspond to Razorpay's payment_id)
+  orderId       String?                         // Corresponds to the order_id
+  userId        String                          // Foreign key referencing the User model
+  planId        String                          // Identifier for the plan associated with the payment
+  createdAt     DateTime   @default(now())
+
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade) // Many-to-one relationship with User
+
+  @@map("payments") // Maps the model to the "payments" table
+}
+
+
+model Plan {
+  id             String   @id @default(cuid()) // Corresponds to UUID in SQL
+  name           String   @unique              // Unique identifier for the plan
+  description    String?                       // Corresponds to TEXT
+  amount          Float    @default(0)         // Corresponds to DECIMAL(10, 2) 
+  type           String   
+  features       String[]                      // Corresponds to list of features provided by the plan 
+
+  @@map("plans") // Maps the model to the "payments" table
 }
