@@ -2,31 +2,54 @@
 // pages/pricing.js
 "use client"
 
-import { useEffect, useState } from 'react';
-import { getPlans } from '@/features/payments/server/plans';
+// useEffect
+import { useState } from 'react';
 import PlanCard from '@/features/payments/_components/planCard';
+import { usePlans } from '@/features/payments/_components/plansContext';
 
 export default function Pricing() {
   
-  const [plans, setPlans] = useState<any>([])
-  const [selectedCard, setSelectedCard] = useState('standard');
-  const handleSelect = (planType: any) => {
-      if (selectedCard === planType) {
-          console.log('Proceeding with payment for plan:', planType);
+
+  // DUMMY DATA
+//   const plans = [
+//     {
+//         id: "basic",
+//         name: "Basic Plan",
+//         item: {
+//             amount: 5000,
+//             notes: { note1: "Feature 1", note2: "Feature 2" }
+//         },
+//         description: "An affordable plan"
+//     },
+//     {
+//         id: "premium",
+//         name: "Premium Plan",
+//         item: {
+//             amount: 15000,
+//             notes: { note1: "Premium Feature 1", note2: "Premium Feature 2" }
+//         },
+//         description: "A premium plan with extra features"
+//     }
+// ];
+  const plans: any = usePlans();
+  const [selectedCard, setSelectedCard] = useState<string | null>(process.env.NEXT_PUBLIC_DEFAULT_PLAN_ID ? process.env.NEXT_PUBLIC_DEFAULT_PLAN_ID : null);
+  const handleSelect = (planId: any) => {
+    console.log("SELECTED PLAN ID", planId);
+
+      if (selectedCard === planId) {
+          console.log('Proceeding with payment for plan:', planId);
           // Add your payment logic here, for example:
           // initiatePayment(plan);
-      } else {
-          setSelectedCard(planType);
-      }
+
+          // Call subscription server action.
+      } 
+      if (selectedCard !== planId) {
+        setSelectedCard((prev) => (prev === planId ? null : planId)); // Only set if it's a new selection
+    }
   };
 
-  useEffect(() => {
-    const getAllPlans = async () => {
-      const plans = await getPlans();
-      setPlans(plans)
-    }
-    getAllPlans();
-  }, []) 
+  
+  
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
       {/* Pricing Page Header */}
@@ -41,39 +64,7 @@ export default function Pricing() {
 
       {/* Pricing Cards */}
       <div className="flex flex-col md:flex-row gap-6 justify-center">
-        {/* Basic Plan Card */}
-      {plans.map((plan: any) => <PlanCard key={plan.id} plan={plan} handleSelect={handleSelect} selectedCard={selectedCard}/> )}
-
-        {/* Pro Plan Card */}
-        {/* <Card
-          className={`w-full md:w-[45%] transform transition-all duration-300 ${
-            selectedCard === 'pro' ? 'scale-105 z-10 shadow-lg' : 'scale-100'
-          }`}
-        >
-          <CardHeader>
-            <h3 className="text-lg font-bold">Pro</h3>
-            <CardTitle className="text-2xl font-semibold">$49.99 / month</CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Perfect for growing businesses
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="space-y-2">
-              <li>✔️ 50 AI Queries / day</li>
-              <li>✔️ Priority Support</li>
-              <li>✔️ Access to all premium features</li>
-            </ul>
-          </CardContent>
-          <CardFooter>
-            <Button
-              variant={selectedCard === 'pro' ? 'primary' : 'outline'}
-              className="w-full"
-              onClick={() => handleSelect('pro')}
-            >
-              {selectedCard === 'pro' ? 'Proceed to Payment' : 'Select Plan'}
-            </Button>
-          </CardFooter>
-        </Card> */}
+      {plans?.map((plan: any) => <PlanCard key={plan.id} plan={plan} handleSelect={handleSelect} selectedCard={selectedCard}/> )}
       </div>
     </div>
   );
