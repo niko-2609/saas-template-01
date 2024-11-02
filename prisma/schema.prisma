@@ -25,6 +25,7 @@ model User {
   payments      Payment[] // One-to-many relationship with Payment model
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
+  subscriptions Subscription[] // One-to-many relationship with Subscription model
 
   @@map("users") // Maps the model to the "users" table
 }
@@ -77,13 +78,13 @@ model Payment {
 }
 
 
-model Plan {
-  id             String   @id @default(cuid()) // Corresponds to UUID in SQL
-  name           String   @unique              // Unique identifier for the plan
-  description    String?                       // Corresponds to TEXT
-  amount          Float    @default(0)         // Corresponds to DECIMAL(10, 2) 
-  type           String   
-  features       String[]                      // Corresponds to list of features provided by the plan 
+model Subscription {
+  id             Int       @id @default(autoincrement())
+  userId         String       // Foreign key referencing the User model
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  status         String   
 
-  @@map("plans") // Maps the model to the "payments" table
+  user          User       @relation(fields: [userId], references: [id], onDelete: Cascade) // Many-to-one relationship with User
+  @@map("subscriptions") // Maps the model to the "subscriptions"
 }
