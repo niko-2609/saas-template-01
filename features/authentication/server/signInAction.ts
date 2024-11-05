@@ -33,7 +33,7 @@ export const signOutAction = async() => {
 
 export const signInMagicLink = async(formData:any) => {
     try{
-        await signIn('resend', formData)
+        await signIn('resend', { redirectTo: DEFAULT_LOGIN_REDIRECT, ...formData })
     } catch(err) {
         throw err
     }

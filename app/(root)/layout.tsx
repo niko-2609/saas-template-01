@@ -3,6 +3,7 @@
 
 "use client"
 import Link from 'next/link';
+import { SessionProvider } from "next-auth/react"
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -11,6 +12,7 @@ export default function Layout({ children }: {children: React.ReactNode}) {
 //   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
+    <SessionProvider>
     <div className="flex flex-col min-h-screen">
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-background shadow-sm">
@@ -58,5 +60,6 @@ export default function Layout({ children }: {children: React.ReactNode}) {
         </div>
       </footer>
     </div>
+    </SessionProvider>
   );
 }
