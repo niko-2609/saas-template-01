@@ -35,9 +35,6 @@ export const getPlans = async () => {
         // parse the response JSON 
         const data = await response.json();
 
-        // transform the amount to cents 
-        data.item.amount = data?.item?.amount / 100;
-
         // transform the notes to an array of key-value pairs
         data.item.notes = Object.entries(data?.notes).map(([key, item]) => {
 
