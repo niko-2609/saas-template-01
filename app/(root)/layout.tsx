@@ -17,7 +17,7 @@ export default function Layout({ children }: {children: React.ReactNode}) {
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-background shadow-sm">
         <div className="max-w-7xl mx-auto p-4 flex justify-between items-center">
-          <h1 className="text-lg font-semibold">Company Name</h1>
+          <h1 className="text-lg font-semibold">Tripsy</h1>
           <div className="flex items-center space-x-6">
             <Link href="/dashboard">
               <Button variant="ghost">Dashboard</Button>
@@ -56,7 +56,7 @@ export default function Layout({ children }: {children: React.ReactNode}) {
       {/* Footer */}
       <footer className="bg-background border-t">
         <div className="max-w-7xl mx-auto p-4 text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} Company Name. All rights reserved.
+          &copy; {new Date().getFullYear()} Tripsy. All rights reserved.
         </div>
       </footer>
     </div>

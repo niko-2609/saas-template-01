@@ -9,27 +9,30 @@ import PlanCard from '@/features/payments/_components/planCard';
 import { usePlans } from '@/features/payments/_components/plansContext';
 import Script from 'next/script';
 import { useSession } from "next-auth/react"
-import { activateSubscription } from '@/features/payments/server/subscriptions';
+import { activateSubscription, updateSubscriptions } from '@/features/payments/server/subscriptions';
+import { useRouter } from 'next/navigation'
+
 
 export default function Pricing() {
 
+  const router = useRouter();
   const plans: any = usePlans();
   const { data: session } = useSession()
   const [selectedCard, setSelectedCard] = useState<string | null>(process.env.NEXT_PUBLIC_DEFAULT_PLAN_ID ? process.env.NEXT_PUBLIC_DEFAULT_PLAN_ID : null);
-  const [ isProcessing, setIsProcessing] = useState(false);
-  const [ error, setError ] = useState("")
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState("")
   const handleSelect = (planId: any) => {
     console.log("SELECTED PLAN ID", planId);
     const userId = session?.user?.id
 
-      if (selectedCard === planId) {
-          console.log('Proceeding with payment for plan:', planId);
-          proceedWithSubscription(userId, planId)
+    if (selectedCard === planId) {
+      console.log('Proceeding with payment for plan:', planId);
+      proceedWithSubscription(userId, planId)
 
-          
-      } 
-      if (selectedCard !== planId) {
-        setSelectedCard((prev) => (prev === planId ? null : planId)); // Only set if it's a new selection
+
+    }
+    if (selectedCard !== planId) {
+      setSelectedCard((prev) => (prev === planId ? null : planId)); // Only set if it's a new selection
     }
   };
 
@@ -45,8 +48,16 @@ export default function Pricing() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         subscription_id: data?.id,
         description: "Monthly subscription testing",
-        handler: function(response:any) {
+        handler: async function (response: any) {
           console.log(response.razorpay_subscription_id, response.razorpay_payment_id, response.razorpay_signature)
+          // Update the subscription status in your database
+        
+          const result = await updateSubscriptions(userId, response.razorpay_payment_id, data?.id, response.razorpay_signature, response.razorpay_subscription_id)
+
+          if (result?.error) {
+            router.push('/payment/error');
+          }
+          router.push('/payment/success')
           /** 
            * Handle successfull payment here
            * We get the following here 
@@ -72,19 +83,19 @@ export default function Pricing() {
       // open razorpay checkout window
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
-    } catch(error:any){ 
+    } catch (error: any) {
       console.log("Payment failed", error)
       setError(error);
     } finally {
       setIsProcessing(false);
-    } 
+    }
   };
 
-  
-  
+
+
   return (
     <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <Script src="https://checkout.razorpay.com/v1/checkout.js"/>
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
 
 
       {/* Loading overlay */}
@@ -101,14 +112,14 @@ export default function Pricing() {
         <h1 className="text-xl font-semibold">Pricing</h1>
         <h2 className="text-5xl font-bold">Choose the right plan for you</h2>
         <p className="text-base text-muted-foreground max-w-xl mx-auto">
-          Choose an affordable plan that’s packed with the best features for engaging your audience, 
+          Choose an affordable plan that’s packed with the best features for engaging your audience,
           creating customer loyalty, and driving sales.
         </p>
       </div>
 
       {/* Pricing Cards */}
       <div className="flex flex-col md:flex-row gap-6 justify-center">
-      {plans?.map((plan: any) => <PlanCard key={plan.id} plan={plan} handleSelect={handleSelect} selectedCard={selectedCard}/> )}
+        {plans?.map((plan: any) => <PlanCard key={plan.id} plan={plan} handleSelect={handleSelect} selectedCard={selectedCard} />)}
       </div>
     </div>
   );
