@@ -6,7 +6,7 @@ import Link from "next/link"
 // import { cn } from "@/lib/utils"
 // import { buttonVariants } from "@/components/ui/button"
 import { LoginForm } from "@/features/authentication/_components/login-form"
-import travelLogin from "@/assets/travel-login.jpg"
+import travelLogin from "@/public/assets/travel-login.jpg"
 import MobileForm from "@/features/authentication/_components/mobile-form"
 
 

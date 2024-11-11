@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { HelpCircleIcon } from 'lucide-react';
+import { TypewriterEffect } from "@/components/ui/typewriter-effect";
 
 
 /** 
@@ -22,10 +23,11 @@ declare global {
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col font-sans">
       {/* Navbar */}
-      <nav className="flex justify-between items-center px-6 py-4 bg-background border-b shadow-sm">
-        <h1 className="text-xl font-semibold">Tripsy</h1>
+      <div className="bg-cover bg-[url('/assets/landing-page-header.jpg')] min-h-[80vh] flex flex-col">
+      <nav className="flex justify-between items-center px-6 py-8">
+        <h1 className="text-5xl font-semibold text-white font-sans">TRIPSY</h1>
         <div className="flex space-x-4">
           <Link href="/about">
             <Button variant="ghost">About Us</Button>
@@ -35,11 +37,10 @@ export default function LandingPage() {
           </Link>
         </div>
       </nav>
-
       {/* Hero Section */}
-      <header className="flex-grow flex flex-col justify-center items-center text-center px-6 py-16 space-y-4">
-        <h2 className="text-4xl md:text-5xl font-bold max-w-2xl">
-          Plan your perfect journey, one click away.
+      <header className="mt-20 flex-grow flex flex-col justify-center items-center text-center px-4 py-20 space-y-4 min-h-[50px] border-2 border-amber-500">
+        <h2 className="">
+        <TypewriterEffect staticText="PLAN YOUR PERFECT JOURNEY" dynamicWords={["WITH POWER OF AI", "ONE CLICK AWAY."]}/>
         </h2>
         <p className="text-muted-foreground text-base max-w-lg">
           Personalized picks for activities, stays, and more—just for you.
@@ -53,14 +54,13 @@ export default function LandingPage() {
               type="text"
               placeholder="Where do you want to go?"
               className="pl-10"
-            />
+              />
           </div>
           <Button variant="default">Start planning!</Button>
         </div>
       </header>
-
       {/* Steps Section */}
-      <section className="bg-background py-16 px-6 text-center space-y-6">
+      <section className="py-16 px-6 text-center space-y-6">
         <h3 className="text-sm text-muted-foreground">3 STEPS TO THE PERFECT TRIP</h3>
         <div className="space-y-2">
           <p className="text-3xl md:text-4xl font-bold">
@@ -98,6 +98,7 @@ export default function LandingPage() {
           </Card>
         </div>
       </section>
+    </div>
 
       {/* Alternating Content and Image Section */}
       <section className="bg-background py-16 px-6 text-center space-y-6">
@@ -140,7 +141,7 @@ export default function LandingPage() {
             type="email"
             placeholder="Enter your email"
             className="max-w-md"
-          />
+            />
           <Button variant="default" className="ml-2">
             Subscribe
           </Button>
@@ -198,7 +199,7 @@ export default function LandingPage() {
           </Link>
         </div>
       </footer>
-    </div>
+21       </div>
   );
 }
 

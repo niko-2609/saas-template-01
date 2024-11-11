@@ -2,6 +2,7 @@
 "use server"
 
 import { db } from "@/features/db/db"
+import { verifySubscription } from "../uitls/verifySubscription";
 
 export const activateSubscription = async (userId : any, planId : any) => {
     // get user from db
@@ -55,8 +56,38 @@ export const activateSubscription = async (userId : any, planId : any) => {
 
 
 
-// // Add subscription to database.
-// export const updateSubscriptions = async(userId : any, subscription_id : any) => {
+// Add subscription to database.
+export const updateSubscriptions = async(userId: string | undefined, razorpay_payment_id: string, subscription_id: string, razorpay_signature: string, razorpay_subscription_id: string ) => {
+    const isSuccess = verifySubscription(razorpay_payment_id, subscription_id, razorpay_signature);
+
+    if (!isSuccess) {
+        return { error: "Error verifying subscription"};
+    }
+
+    const subscription = await db?.subscription?.findFirst({
+        where: {
+            subId: subscription_id,
+        }
+    });
+
+    if (!subscription) {
+        const newSubscription = await db?.subscription?.create({
+            data: {
+                subId: subscription_id,
+                userId: userId,
+                status: "active",
+                razorpaySubId: razorpay_subscription_id,
+                razorpayPayId: razorpay_payment_id,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+            }
+        })
+
+        console.log(newSubscription)
+        return { success: "Subscription added successfully"};
+    }
+    return { error: "Subscription already exists"};
+}
 
 
-// }
+
