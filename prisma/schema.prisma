@@ -83,7 +83,10 @@ model Subscription {
   userId         String       // Foreign key referencing the User model
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
-  status         String   
+  status         String  
+  subId          String 
+  razorpaySubId  String 
+  razorpayPayId  String
 
   user          User       @relation(fields: [userId], references: [id], onDelete: Cascade) // Many-to-one relationship with User
   @@map("subscriptions") // Maps the model to the "subscriptions"

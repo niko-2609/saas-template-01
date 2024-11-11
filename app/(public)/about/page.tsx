@@ -16,11 +16,11 @@ export default function AboutUs() {
       </header>
 
       {/* Our Story Section */}
-      <section className="bg-white py-16 px-6">
-        <div className="max-w-5xl mx-auto text-center space-y-6">
+      <section className="bg-white py-12 px-6">
+        <div className="max-w-5xl mx-auto text-center space-y-3">
           <h2 className="text-3xl font-bold">Our Story</h2>
           <p className="text-base text-muted-foreground max-w-3xl mx-auto">
-            Founded in 2023, our company was born from the idea that travel planning should be simple, personalized, and stress-free. 
+            Founded in 2024, our company was born from the idea that travel planning should be simple, personalized, and stress-free. 
             With a passion for exploring new places and making memories, we’ve built a platform that combines the power of AI with the expertise of seasoned travelers.
           </p>
           <p className="text-base text-muted-foreground max-w-3xl mx-auto">
