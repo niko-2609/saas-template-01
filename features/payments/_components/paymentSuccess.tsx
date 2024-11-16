@@ -3,17 +3,14 @@
 "use client"
 
 import '@/features/payments/_components/styles.css';
-import { color } from 'framer-motion';
 // PaymentStatus.js
 import { CheckCircle2Icon } from "lucide-react"
-import useWindowSize from 'react-use/lib/useWindowSize'
 import Confetti from 'react-confetti'
 import { useEffect, useState } from 'react';
 
 
 
 export default function PaymentStatus({ isSuccess }: any) {
-    const { width, height } = useWindowSize()
     const [ confettiRun, setConfettiRun] = useState<any>(null)
     const [ confettiPieces, setConfettiPieces ] = useState<any>(100)
 

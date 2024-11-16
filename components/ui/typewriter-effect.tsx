@@ -46,13 +46,13 @@ export const TypewriterEffect = ({
   return (
     <div
       className={cn(
-        "text-base sm:text-xl md:text-3xl lg:text-5xl min-h-[50px] flex flex-col items-center font-bold text-center gap-2 border-2 border-red-50",
+        "text-base sm:text-xl md:text-3xl lg:text-4xl min-h-[50px] flex flex-col items-center font-bold text-center gap-2",
         className
       )}
     >
-      <span className="flex text-white">{staticText}&nbsp;</span>
+      <span className="flex">{staticText}&nbsp;</span>
       <div className="flex items-center">
-      <span className="inline-block text-white">{displayedText}&nbsp;</span>
+      <span className="inline-block">{displayedText}&nbsp;</span>
       <motion.span
         initial={{ opacity: 1 }}
         animate={{ opacity: 1 }}
