@@ -17,16 +17,16 @@ function PlanCard({ plan, selectedCard, handleSelect }: { plan: any; selectedCar
     console.log("isSelected for", plan.id, ":", isSelected);
     return (
         <Card
-            className={`w-full md:w-[45%] transform transition-all duration-100 ${isSelected ? 'card-selected' : 'card-unselected'}`}
+            className={`w-full md:w-[45%] transform transition-all duration-100 ${isSelected ? 'card-selected' : 'card-unselected'} bg-slate-800`}
         >
-            <CardHeader>
+            <CardHeader className='text-white'>
                 <h3 className="text-lg font-bold">{plan.name}</h3>
                 <CardTitle className="text-2xl font-semibold">Rs. {plan?.item?.amount / 100} / month</CardTitle>
                 <CardDescription className="text-muted-foreground">
                     {plan.description}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 text-white">
                 <ul className="space-y-2">
                     {plan?.item?.notes?.map(([key, feature]: [string, string]) => (
                         <li key={key}>✔️ {`${feature} ${key}`}</li>
