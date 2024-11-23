@@ -2,7 +2,7 @@
 "use server"
 
 import { db } from "@/features/db/db"
-import { verifySubscription } from "../uitls/verifySubscription";
+import { verifySubscription } from "../utils/verifySubscription";
 
 export const activateSubscription = async (userId : any, planId : any) => {
     // get user from db
@@ -58,6 +58,10 @@ export const activateSubscription = async (userId : any, planId : any) => {
 
 // Add subscription to database.
 export const updateSubscriptions = async(userId: string | undefined, razorpay_payment_id: string, subscription_id: string, razorpay_signature: string, razorpay_subscription_id: string ) => {
+    if (!userId) {
+        return { error: "User ID is required" };
+    }
+    
     const isSuccess = verifySubscription(razorpay_payment_id, subscription_id, razorpay_signature);
 
     if (!isSuccess) {
