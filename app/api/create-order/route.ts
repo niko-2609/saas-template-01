@@ -60,8 +60,16 @@ export async function POST(req: any) {
         }
 
         // get plan id from request body
-        const { planId }  = req.body;
+        const { amount, planId }  = req.body;
         
+
+         // Validate amount
+    if (!amount || typeof amount !== 'number' || amount <= 0) {
+        return NextResponse.json(
+            { error: 'Invalid amount' },
+            { status: 400 }
+        )
+    }
         //fetch plan from database
         // TODO: Create getPlanDetails method
         // const plan = getPlanDetails(planId);
