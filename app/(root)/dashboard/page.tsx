@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import Image from 'next/image'
 import Link from 'next/link'
 import { PlusCircle, Calendar, MapPin, Clock } from 'lucide-react'
 
@@ -10,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-
 
 export const metadata: Metadata = {
   title: 'Dashboard | TravelPlan',
@@ -83,6 +83,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="mb-8">
+
   <Card>
     <CardHeader>
       <CardTitle>Start a New Adventure</CardTitle>
@@ -99,6 +100,7 @@ export default function DashboardPage() {
     </CardContent>
   </Card>
 </div>
+
 
         <div>
           <h2 className="text-2xl font-bold mb-4">Recent Itineraries</h2>
