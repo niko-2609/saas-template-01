@@ -50,13 +50,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             console.log("Session:", session)
             console.log("Token:", token)
 
-            return {
-                ...session,
-                user: {
-                    ...session.user,
-                    id: token.id as string
-                }
+            if (token) {
+                session.user.id = token.id as string
             }
+            return session
         },
     },
 })

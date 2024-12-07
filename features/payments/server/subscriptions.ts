@@ -5,6 +5,11 @@ import { db } from "@/features/db/db"
 import { verifySubscription } from "../utils/verifySubscription";
 
 export const activateSubscription = async (userId : any, planId : any) => {
+
+    if (!userId) {
+        throw new Error("User ID is required");
+    }
+
     // get user from db
     const user = await db.user.findUnique({
         where :{ 
