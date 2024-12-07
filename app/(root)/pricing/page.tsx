@@ -17,22 +17,29 @@ export default function Pricing() {
 
   const router = useRouter();
   const plans: any = usePlans();
-  const { data: session } = useSession()
+  const { data: session, status } = useSession()
   const [selectedCard, setSelectedCard] = useState<string | null>(process.env.NEXT_PUBLIC_DEFAULT_PLAN_ID ? process.env.NEXT_PUBLIC_DEFAULT_PLAN_ID : null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("")
   const handleSelect = (planId: any) => {
     console.log("SELECTED PLAN ID", planId);
-    const userId = session?.user?.id
-
-    if (selectedCard === planId) {
-      console.log('Proceeding with payment for plan:', planId);
-      proceedWithSubscription(userId, planId)
 
 
-    }
-    if (selectedCard !== planId) {
-      setSelectedCard((prev) => (prev === planId ? null : planId)); // Only set if it's a new selection
+    if (status === "authenticated") {
+      console.log("SESSION", session)
+      const userId = session?.user?.id
+      console.log("USER ID", userId)
+      if (selectedCard === planId) {
+        console.log('Proceeding with payment for plan:', planId);
+        proceedWithSubscription(userId, planId)
+  
+  
+      }
+      if (selectedCard !== planId) {
+        setSelectedCard((prev) => (prev === planId ? null : planId)); // Only set if it's a new selection
+      }
+    } else {
+      console.log("USER NOT AUTHENTICATED")
     }
   };
 
@@ -41,8 +48,8 @@ export default function Pricing() {
     setIsProcessing(true);
 
     // create new subscription and fetch subscription id
-    const data = await activateSubscription(userId, planId);
     try {
+      const data = await activateSubscription(userId, planId);
       //Initialize Razorpay
       const options = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
@@ -84,8 +91,8 @@ export default function Pricing() {
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
     } catch (error: any) {
-      console.log("Payment failed", error)
       setError(error);
+      router.push(`/payment/error?error=${encodeURIComponent('SERVER_ERROR')}`);
     } finally {
       setIsProcessing(false);
     }
