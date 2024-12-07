@@ -1,12 +1,12 @@
 "use client"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-
+import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { protectedAction } from "@/features/itenary-generator/server/rateLimitAction"
 import { useSession } from "next-auth/react"
 import { useState } from "react"
-import GeneratorForm from "@/features/itenary-generator/_components/itinerary-form"
+import GeneratorForm from "@/features/itenary-generator/_components/generator-form"
 
 export default function ItineraryGeneratorPage() {
   const router = useRouter()
@@ -32,22 +32,26 @@ export default function ItineraryGeneratorPage() {
 
   return (
     <div className="max-w-4xl mx-auto p-6">
-    <Card className="border-none shadow-none">
-      <CardHeader className="text-center">
-        <CardTitle className="text-2xl font-bold">Create Your Perfect Itinerary</CardTitle>
-        <CardDescription className="text-lg">
-          Let us help you plan your next adventure with personalized recommendations.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {error && (
-          <div className="text-red-500 text-sm mb-4">
-            {error}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-3xl">Create Your Perfect Itinerary</CardTitle>
+          <CardDescription className="text-md">
+            Let us help you plan your next adventure with personalized recommendations.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {error && (
+            <div className="text-red-500 text-sm mb-4">
+              {error}
+            </div>
+          )}
+          
+          {/* Placeholder for your future form */}
+          <div className="bg-slate-100 p-8 rounded-lg text-left w-full">
+            <GeneratorForm />
           </div>
-        )}
-        <GeneratorForm />
-      </CardContent>
-    </Card>
-  </div>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
