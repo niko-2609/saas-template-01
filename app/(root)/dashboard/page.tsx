@@ -1,5 +1,4 @@
 import { Metadata } from 'next'
-import Image from 'next/image'
 import Link from 'next/link'
 import { PlusCircle, Calendar, MapPin, Clock } from 'lucide-react'
 
@@ -11,14 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+
 
 export const metadata: Metadata = {
   title: 'Dashboard | TravelPlan',
@@ -91,20 +83,22 @@ export default function DashboardPage() {
         </div>
 
         <div className="mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Start a New Adventure</CardTitle>
-              <CardDescription>
-                Create a new itinerary based on your preferences.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button className="w-full sm:w-auto">
-                <PlusCircle className="mr-2 h-4 w-4" /> Create New Itinerary
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
+  <Card>
+    <CardHeader>
+      <CardTitle>Start a New Adventure</CardTitle>
+      <CardDescription>
+        Create a new itinerary based on your preferences.
+      </CardDescription>
+    </CardHeader>
+    <CardContent>
+      <Link href="/itenary-generator">
+        <Button className="w-full sm:w-auto">
+          <PlusCircle className="mr-2 h-4 w-4" /> Create New Itinerary
+        </Button>
+      </Link>
+    </CardContent>
+  </Card>
+</div>
 
         <div>
           <h2 className="text-2xl font-bold mb-4">Recent Itineraries</h2>
