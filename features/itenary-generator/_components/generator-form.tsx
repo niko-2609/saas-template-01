@@ -28,11 +28,11 @@ import {
 } from "@/components/ui/popover"
 import { addDays, format } from "date-fns"
 import { Libraries, useLoadScript } from "@react-google-maps/api";
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, ChevronDownCircle } from 'lucide-react';
 import { Calendar } from "@/components/ui/calendar"
 import { googlePlacesAutoComplete } from '@/features/itenary-generator/server/googlePlaces';
 import { PlaceAutocompleteResult } from '@googlemaps/google-maps-services-js';
-import React , { useEffect, useState,  useRef, useTransition  } from "react";
+import React, { useEffect, useState, useRef, useTransition } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -76,24 +76,6 @@ export default function GeneratorForm() {
     const [position, setPosition] = useState<string>("");
     const [pending, setPending] = useState(false);
 
-    // const form = useForm({
-    //     resolver: zodResolver(formSchema),
-    //     defaultValues: {
-    //         source_city: "",
-    //         destination_city: "",
-    //         travel_dates: null,
-    //         travel_type: "",
-    //         stops_inbetween: 0,
-    //         mass_tourism: false,
-    //         ecological: false,
-    //         hiking: false,
-    //         diving: false,
-    //         climbing: false,
-    //         sightseeing: false,
-    //     },
-    // });
-
-
     const form = useForm({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -101,7 +83,7 @@ export default function GeneratorForm() {
             destination_city: "",
             travel_dates: { from: undefined, to: undefined }, // Changed from null to match schema
             travel_type: "",
-            stops_inbetween: 0,
+            stops_inbetween: "0",
             mass_tourism: false,
             ecological: false,
             hiking: false,
@@ -115,8 +97,15 @@ export default function GeneratorForm() {
         setPending(true);
         try {
             // Simulate API call
+            const updatedValues = {
+                ...values,
+                source_city: sourceCity,
+                destination_city: destCity,
+                travel_dates: date,
+                travel_type: position,
+            };
             await new Promise((resolve) => setTimeout(resolve, 2000));
-            console.log(values);
+            console.log(updatedValues);
         } catch (error) {
             console.error('Error submitting form:', error);
         } finally {
@@ -125,9 +114,12 @@ export default function GeneratorForm() {
     };
 
     const handleSourceCityChange = async (e: any) => {
-        setSearchSourceCityString(e.target.value);
-        if (e.target.value.length > 2) {
-            const predictions = await googlePlacesAutoComplete(searchSourceCitystring);
+        const value = e.target.value;
+        setSearchSourceCityString(value);
+        setSourceCity(value); // Update the sourceCity state with the current input value
+    
+        if (value.length > 2) {
+            const predictions = await googlePlacesAutoComplete(value);
             setSourceCityPredictions(predictions);
         } else {
             setSourceCityPredictions(null);
@@ -135,144 +127,147 @@ export default function GeneratorForm() {
     };
 
     const handleDestCityChange = async (e: any) => {
-        setSearchDestCityString(e.target.value);
-        if (e.target.value.length > 2) {
-            const predictions = await googlePlacesAutoComplete(searchDestCitystring);
+        const value = e.target.value;
+        setSearchDestCityString(value);
+        setDestCity(value); // Update the destCity state with the current input value
+    
+        if (value.length > 2) {
+            const predictions = await googlePlacesAutoComplete(value);
             setDestCityPredictions(predictions);
         } else {
             setDestCityPredictions(null);
         }
     };
 
-//     const messagesRef = useRef<HTMLDivElement>(null);
-//     const [sourceCity, setSourceCity] = useState("");
-//     const [destCity, setDestCity] = useState("");
-//     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
-//     const [gptResponse, setGPTResponse] = useState<any>();
-//     const [error, setError] = useState<any>();
-//     const [isGenerating, setIsGenerating] = useState<boolean>(false);
-//     const [pending, startTransition] = useTransition();
-//     const [position, setPosition] = React.useState("");
-//     const [searchSourceCitystring, setSearchSourceCityString] = useState("")
-//     const [searchDestCitystring, setSearchDestCityString] = useState("")
-//     const [sourceCityPredictions, setSourceCityPredictions] = useState<PlaceAutocompleteResult[] | null>([])
-//     const [destCityPredictions, setDestCityPredictions] = useState<PlaceAutocompleteResult[] | null>([])
-//    const [generation, setGeneration] = useState<string>('');
+    //     const messagesRef = useRef<HTMLDivElement>(null);
+    //     const [sourceCity, setSourceCity] = useState("");
+    //     const [destCity, setDestCity] = useState("");
+    //     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
+    //     const [gptResponse, setGPTResponse] = useState<any>();
+    //     const [error, setError] = useState<any>();
+    //     const [isGenerating, setIsGenerating] = useState<boolean>(false);
+    //     const [pending, startTransition] = useTransition();
+    //     const [position, setPosition] = React.useState("");
+    //     const [searchSourceCitystring, setSearchSourceCityString] = useState("")
+    //     const [searchDestCitystring, setSearchDestCityString] = useState("")
+    //     const [sourceCityPredictions, setSourceCityPredictions] = useState<PlaceAutocompleteResult[] | null>([])
+    //     const [destCityPredictions, setDestCityPredictions] = useState<PlaceAutocompleteResult[] | null>([])
+    //    const [generation, setGeneration] = useState<string>('');
 
 
 
-//     const { messages, input, handleInputChange, handleSubmit } = useChat({
-//         onResponse(response) {
-//             if (response) {
-//                 setIsGenerating(false)
-//             }
-//         },
-//         onError(error) {
-//             if (error) {
-//                 setIsGenerating(false)
-//             }
-//         }
-//     });
+    //     const { messages, input, handleInputChange, handleSubmit } = useChat({
+    //         onResponse(response) {
+    //             if (response) {
+    //                 setIsGenerating(false)
+    //             }
+    //         },
+    //         onError(error) {
+    //             if (error) {
+    //                 setIsGenerating(false)
+    //             }
+    //         }
+    //     });
 
-//     const { isLoaded, loadError } = useLoadScript({
-//         googleMapsApiKey: apiKey,
-//         libraries,
-//     });
-//     const [date, setDate] = React.useState<DateRange | undefined>({
-//         from: new Date(2024, 11, 20),
-//         to: addDays(new Date(2024, 0, 20), 20),
-//     });
-//     const onSubmit = async (values: z.infer<typeof PromptSchema>) => {
-//         setHtmlContent("")
-//         if (position !== null && position !== "") {
-//             values.travel_type = position
-//         }
-//         values.source_city = sourceCity
-//         values.destination_city = destCity
-//         console.log(JSON.stringify(values));
-
-     
-
-//         //CALL OPENAI API HERE
-//         startTransition(() => {
-//             try {
-//                 // streamAIResponse(values).then((response: any) => {
-//                 //     setComponent(response)
-//                 // });
-//                 (async () => {
-//                     const { output }  = await streamAIResponse(values as any);
-//                     for await (const delta of readStreamableValue(output as any)) { 
-//                         setGeneration(currentGeneration => `${currentGeneration}${delta}`);
-//                     }
-//                 })()
-//             } catch (error: any) {
-//                 console.error(error);
-//                 setError(error)
-//             }
-//         })
-//     };
-//     const [htmlContent, setHtmlContent] = useState('');
-//     const [extraParagraph, setExtraParagraph] = useState('');
-  
-//     useEffect(() => {
-//       // Step 1: Split the content by </html> to separate the valid HTML and extra text
-//       const htmlEndIndex = generation.indexOf('</html>');
-      
-//       if (htmlEndIndex !== -1) {
-//         const htmlPart = generation.slice(0, htmlEndIndex + 7).replace(/```html|```/g, '')// Get the HTML document
-//         const extraText = generation.slice(htmlEndIndex + 7).trim(); // Capture the text after </html>
-
-//        // const finalhtml = htmlPart.replace(/```html|```/g, '')
-  
-//         setHtmlContent(htmlPart);
-//         setExtraParagraph(extraText); // Store extra paragraph
-//       } else {
-//         setHtmlContent(generation); // If no </html> is found, treat the entire content as HTML
-//       }
-//     }, [generation]);
-  
-//     useEffect(() => {
-//         const fetchPredictions = async () => {
-//             const predictions = await googlePlacesAutoComplete(searchSourceCitystring);
-//             setSourceCityPredictions(predictions || []);
-//         }
-//         fetchPredictions()
-//     }, [searchSourceCitystring])
+    //     const { isLoaded, loadError } = useLoadScript({
+    //         googleMapsApiKey: apiKey,
+    //         libraries,
+    //     });
+    //     const [date, setDate] = React.useState<DateRange | undefined>({
+    //         from: new Date(2024, 11, 20),
+    //         to: addDays(new Date(2024, 0, 20), 20),
+    //     });
+    //     const onSubmit = async (values: z.infer<typeof PromptSchema>) => {
+    //         setHtmlContent("")
+    //         if (position !== null && position !== "") {
+    //             values.travel_type = position
+    //         }
+    //         values.source_city = sourceCity
+    //         values.destination_city = destCity
+    //         console.log(JSON.stringify(values));
 
 
-//     useEffect(() => {
-//         const fetchPredictions = async () => {
-//             const predictions = await googlePlacesAutoComplete(searchDestCitystring);
-//             setDestCityPredictions(predictions || []);
-//         }
-//         fetchPredictions()
-//     }, [searchDestCitystring])
 
-//     useEffect(() => {
-//         if (messagesRef.current) {
-//           messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-//         }
-//       }, [messages]);
+    //         //CALL OPENAI API HERE
+    //         startTransition(() => {
+    //             try {
+    //                 // streamAIResponse(values).then((response: any) => {
+    //                 //     setComponent(response)
+    //                 // });
+    //                 (async () => {
+    //                     const { output }  = await streamAIResponse(values as any);
+    //                     for await (const delta of readStreamableValue(output as any)) { 
+    //                         setGeneration(currentGeneration => `${currentGeneration}${delta}`);
+    //                     }
+    //                 })()
+    //             } catch (error: any) {
+    //                 console.error(error);
+    //                 setError(error)
+    //             }
+    //         })
+    //     };
+    //     const [htmlContent, setHtmlContent] = useState('');
+    //     const [extraParagraph, setExtraParagraph] = useState('');
 
-//     const [travel_type, setSelectedTravelType] = React.useState("")
+    //     useEffect(() => {
+    //       // Step 1: Split the content by </html> to separate the valid HTML and extra text
+    //       const htmlEndIndex = generation.indexOf('</html>');
 
-//     const form = useForm<z.infer<typeof PromptSchema>>({
-//         resolver: zodResolver(PromptSchema),
-//         defaultValues: {
-//             travel_dates: date,
-//             source_city: "",
-//             destination_city: "",
-//             travel_type: travel_type,
-//             ecological: false,
-//             mass_tourism: false,
-//             diving: false,
-//             surfing: false,
-//             hiking: false,
-//             climbing: false,
-//             sightseeing: false,
-//             stops_inbetween: "0"
-//         }
-//     })
+    //       if (htmlEndIndex !== -1) {
+    //         const htmlPart = generation.slice(0, htmlEndIndex + 7).replace(/```html|```/g, '')// Get the HTML document
+    //         const extraText = generation.slice(htmlEndIndex + 7).trim(); // Capture the text after </html>
+
+    //        // const finalhtml = htmlPart.replace(/```html|```/g, '')
+
+    //         setHtmlContent(htmlPart);
+    //         setExtraParagraph(extraText); // Store extra paragraph
+    //       } else {
+    //         setHtmlContent(generation); // If no </html> is found, treat the entire content as HTML
+    //       }
+    //     }, [generation]);
+
+    //     useEffect(() => {
+    //         const fetchPredictions = async () => {
+    //             const predictions = await googlePlacesAutoComplete(searchSourceCitystring);
+    //             setSourceCityPredictions(predictions || []);
+    //         }
+    //         fetchPredictions()
+    //     }, [searchSourceCitystring])
+
+
+    //     useEffect(() => {
+    //         const fetchPredictions = async () => {
+    //             const predictions = await googlePlacesAutoComplete(searchDestCitystring);
+    //             setDestCityPredictions(predictions || []);
+    //         }
+    //         fetchPredictions()
+    //     }, [searchDestCitystring])
+
+    //     useEffect(() => {
+    //         if (messagesRef.current) {
+    //           messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+    //         }
+    //       }, [messages]);
+
+    //     const [travel_type, setSelectedTravelType] = React.useState("")
+
+    //     const form = useForm<z.infer<typeof PromptSchema>>({
+    //         resolver: zodResolver(PromptSchema),
+    //         defaultValues: {
+    //             travel_dates: date,
+    //             source_city: "",
+    //             destination_city: "",
+    //             travel_type: travel_type,
+    //             ecological: false,
+    //             mass_tourism: false,
+    //             diving: false,
+    //             surfing: false,
+    //             hiking: false,
+    //             climbing: false,
+    //             sightseeing: false,
+    //             stops_inbetween: "0"
+    //         }
+    //     })
 
     // const handleSuggestionSelect = (value: any) => {
     //     console.log("SUGGESTION SELECTED", value)
@@ -321,7 +316,7 @@ export default function GeneratorForm() {
                                     </FormItem>
                                 )}
                             />
-    
+
                             <FormField
                                 control={form.control}
                                 name="destination_city"
@@ -360,7 +355,7 @@ export default function GeneratorForm() {
                         </div>
                     </div>
                     <div>
-                    {/* Date Selection */}
+                        {/* Date Selection */}
                         <FormField
                             control={form.control}
                             name="travel_dates"
@@ -396,9 +391,9 @@ export default function GeneratorForm() {
                                                 <Calendar
                                                     initialFocus
                                                     mode="range"
-                                                    defaultMonth={date?.from as any}
-                                                    selected={date as any}
-                                                    onSelect={setDate as any}
+                                                    defaultMonth={date?.from}
+                                                    selected={date}
+                                                    onSelect={setDate}
                                                     numberOfMonths={2}
                                                     className="rounded-md border"
                                                 />
@@ -424,11 +419,12 @@ export default function GeneratorForm() {
                                         <FormControl>
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
-                                                    <Button variant="outline" className="w-full h-11 justify-start text-base">
+                                                    <Button variant="outline" className="w-full justify-between text-base">
                                                         {position || "Select travel type"}
+                                                        <ChevronDownCircle />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent className="w-[200px]">
+                                                <DropdownMenuContent className="w-full">
                                                     <DropdownMenuLabel>Choose your travel type</DropdownMenuLabel>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuRadioGroup value={position} onValueChange={setPosition}>
@@ -443,7 +439,7 @@ export default function GeneratorForm() {
                                     </FormItem>
                                 )}
                             />
-    
+
                             <FormField
                                 control={form.control}
                                 name="stops_inbetween"
@@ -463,25 +459,26 @@ export default function GeneratorForm() {
                                 )}
                             />
                         </div>
-    
+
                         {/* Activities Section */}
                         <div className="space-y-4">
                             <h3 className="text-2xl font-semibold text-slate-800 mb-6">Preferred Activities</h3>
-                            <div className="flex justify-between items-center w-full gap-4">
-                                {['hiking', 'diving', 'climbing', 'sightseeing'].map((activity) => (
+                            <div className="flex items-center justify-between gap-4">
+                                {['Hiking', 'Diving', 'Climbing', 'Sightseeing'].map((activity) => (
                                     <FormField
                                         key={activity}
                                         control={form.control}
                                         name={activity as any}
                                         render={({ field }) => (
-                                            <FormItem className="flex items-center space-x-2">
+                                            <FormItem className="flex items-center space-x-2 flex-1">
                                                 <FormControl>
                                                     <Checkbox
                                                         checked={field.value}
                                                         onCheckedChange={field.onChange}
+                                                       className="flex p-2 mt-2"
                                                     />
                                                 </FormControl>
-                                                <FormLabel className="text-sm font-medium text-slate-700 capitalize">
+                                                <FormLabel className="font-medium text-slate-700 capitalize m-0">
                                                     {activity}
                                                 </FormLabel>
                                             </FormItem>
@@ -492,7 +489,7 @@ export default function GeneratorForm() {
                         </div>
                     </div>
                 </div>
-    
+
                 <Button
                     type="submit"
                     className="w-full mt-8 h-11 text-base font-medium"
