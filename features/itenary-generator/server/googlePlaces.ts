@@ -12,7 +12,6 @@ export const googlePlacesAutoComplete = async(input: string) => {
             key: process.env.GOOGLE_API_KEY!,
         }
  })
- console.log(response.data.predictions)
     return response.data.predictions
  } catch (error) {
     console.log("AUTOCOMPLETE ERROR:", error)
