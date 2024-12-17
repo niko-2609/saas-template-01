@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+'use client'
+
 import {
     Form,
     FormControl,
@@ -26,36 +28,23 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover"
-import { addDays, format } from "date-fns"
-import { Libraries, useLoadScript } from "@react-google-maps/api";
+import {  format } from "date-fns"
+import { Libraries } from "@react-google-maps/api";
 import { CalendarIcon, ChevronDownCircle } from 'lucide-react';
 import { Calendar } from "@/components/ui/calendar"
 import { googlePlacesAutoComplete } from '@/features/itenary-generator/server/googlePlaces';
-import { PlaceAutocompleteResult } from '@googlemaps/google-maps-services-js';
-import React, { useEffect, useState, useRef, useTransition } from "react";
+import React, { useEffect, useState, startTransition, useRef } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useChat } from 'ai/react';
 import { streamAIResponse } from "../server/openai";
 import { readStreamableValue } from "ai/rsc";
+import { formSchema } from "../schemas";
+import parse from 'html-react-parser';
 
-const formSchema = z.object({
-    source_city: z.string().optional(),
-    destination_city: z.string().optional(),
-    travel_dates: z.object({
-        from: z.date().optional(),
-        to: z.date().optional(),
-    }).optional(),
-    travel_type: z.string().optional(),
-    stops_inbetween: z.string().optional(),
-    mass_tourism: z.boolean().optional(),
-    ecological: z.boolean().optional(),
-    hiking: z.boolean().optional(),
-    diving: z.boolean().optional(),
-    climbing: z.boolean().optional(),
-    sightseeing: z.boolean().optional(),
-});
+
+
 
 function formatSuggestions(str: string) {
     return str.split(',')[0];
@@ -64,6 +53,8 @@ function formatSuggestions(str: string) {
 
 const libraries: Libraries = ["places"];
 export default function GeneratorForm() {
+
+    const messagesRef = useRef<HTMLDivElement>(null);
     const [sourceCityPredictions, setSourceCityPredictions] = useState<any>(null);
     const [destCityPredictions, setDestCityPredictions] = useState<any>(null);
     const [sourceCity, setSourceCity] = useState<string>("");
@@ -73,8 +64,18 @@ export default function GeneratorForm() {
     const [date, setDate] = useState<{ from: Date | null; to: Date | null } | null>(
         null
     );
+
+    
     const [position, setPosition] = useState<string>("");
     const [pending, setPending] = useState(false);
+    const [generation, setGeneration] = useState<string>('');
+    const [error, setError ] = useState<string | null>(null);
+    const [htmlContent, setHtmlContent] = useState('');
+    const [extraParagraph, setExtraParagraph] = useState('');
+    const [generatingResponse, setGeneratingResponse] = useState<boolean>(false);
+
+
+
 
     const form = useForm({
         resolver: zodResolver(formSchema),
@@ -93,6 +94,20 @@ export default function GeneratorForm() {
         },
     });
 
+
+    const { messages, input, handleInputChange, handleSubmit } = useChat({
+        onResponse(response) {
+            if (response) {
+                setGeneratingResponse(false)
+            }
+        },
+        onError(error) {
+            if (error) {
+                setGeneratingResponse(false)
+            }
+        }
+    });
+
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setPending(true);
         try {
@@ -104,7 +119,28 @@ export default function GeneratorForm() {
                 travel_dates: date,
                 travel_type: position,
             };
-            await new Promise((resolve) => setTimeout(resolve, 2000));
+
+
+
+             //CALL OPENAI API HERE
+        startTransition(() => {
+            try {
+                // streamAIResponse(values).then((response: any) => {
+                //     setComponent(response)
+                // });
+                (async () => {
+                     // Validate updatedValues against the schema
+                     const validatedValues = formSchema.parse(updatedValues);
+                    const { output }  = await streamAIResponse(validatedValues);
+                    for await (const delta of readStreamableValue(output)) { 
+                        setGeneration(currentGeneration => `${currentGeneration}${delta}`);
+                    }
+                })()
+            } catch (error: any) {
+                console.error(error);
+                setError(error)
+            }
+        })
             console.log(updatedValues);
         } catch (error) {
             console.error('Error submitting form:', error);
@@ -112,6 +148,29 @@ export default function GeneratorForm() {
             setPending(false);
         }
     };
+
+    useEffect(() => {
+        // Step 1: Split the content by </html> to separate the valid HTML and extra text
+        const htmlEndIndex = generation.indexOf('</html>');
+        
+        if (htmlEndIndex !== -1) {
+          const htmlPart = generation.slice(0, htmlEndIndex + 7).replace(/```html|```/g, '')// Get the HTML document
+          const extraText = generation.slice(htmlEndIndex + 7).trim(); // Capture the text after </html>
+  
+         // const finalhtml = htmlPart.replace(/```html|```/g, '')
+    
+          setHtmlContent(htmlPart);
+          setExtraParagraph(extraText); // Store extra paragraph
+        } else {
+          setHtmlContent(generation); // If no </html> is found, treat the entire content as HTML
+        }
+      }, [generation]);
+
+      useEffect(() => {
+        if (messagesRef.current) {
+          messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
+        }
+      }, [messages]);
 
     const handleSourceCityChange = async (e: any) => {
         const value = e.target.value;
@@ -139,141 +198,9 @@ export default function GeneratorForm() {
         }
     };
 
-    //     const messagesRef = useRef<HTMLDivElement>(null);
-    //     const [sourceCity, setSourceCity] = useState("");
-    //     const [destCity, setDestCity] = useState("");
-    //     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_API_KEY || "";
-    //     const [gptResponse, setGPTResponse] = useState<any>();
-    //     const [error, setError] = useState<any>();
-    //     const [isGenerating, setIsGenerating] = useState<boolean>(false);
-    //     const [pending, startTransition] = useTransition();
-    //     const [position, setPosition] = React.useState("");
-    //     const [searchSourceCitystring, setSearchSourceCityString] = useState("")
-    //     const [searchDestCitystring, setSearchDestCityString] = useState("")
-    //     const [sourceCityPredictions, setSourceCityPredictions] = useState<PlaceAutocompleteResult[] | null>([])
-    //     const [destCityPredictions, setDestCityPredictions] = useState<PlaceAutocompleteResult[] | null>([])
-    //    const [generation, setGeneration] = useState<string>('');
-
-
-
-    //     const { messages, input, handleInputChange, handleSubmit } = useChat({
-    //         onResponse(response) {
-    //             if (response) {
-    //                 setIsGenerating(false)
-    //             }
-    //         },
-    //         onError(error) {
-    //             if (error) {
-    //                 setIsGenerating(false)
-    //             }
-    //         }
-    //     });
-
-    //     const { isLoaded, loadError } = useLoadScript({
-    //         googleMapsApiKey: apiKey,
-    //         libraries,
-    //     });
-    //     const [date, setDate] = React.useState<DateRange | undefined>({
-    //         from: new Date(2024, 11, 20),
-    //         to: addDays(new Date(2024, 0, 20), 20),
-    //     });
-    //     const onSubmit = async (values: z.infer<typeof PromptSchema>) => {
-    //         setHtmlContent("")
-    //         if (position !== null && position !== "") {
-    //             values.travel_type = position
-    //         }
-    //         values.source_city = sourceCity
-    //         values.destination_city = destCity
-    //         console.log(JSON.stringify(values));
-
-
-
-    //         //CALL OPENAI API HERE
-    //         startTransition(() => {
-    //             try {
-    //                 // streamAIResponse(values).then((response: any) => {
-    //                 //     setComponent(response)
-    //                 // });
-    //                 (async () => {
-    //                     const { output }  = await streamAIResponse(values as any);
-    //                     for await (const delta of readStreamableValue(output as any)) { 
-    //                         setGeneration(currentGeneration => `${currentGeneration}${delta}`);
-    //                     }
-    //                 })()
-    //             } catch (error: any) {
-    //                 console.error(error);
-    //                 setError(error)
-    //             }
-    //         })
-    //     };
-    //     const [htmlContent, setHtmlContent] = useState('');
-    //     const [extraParagraph, setExtraParagraph] = useState('');
-
-    //     useEffect(() => {
-    //       // Step 1: Split the content by </html> to separate the valid HTML and extra text
-    //       const htmlEndIndex = generation.indexOf('</html>');
-
-    //       if (htmlEndIndex !== -1) {
-    //         const htmlPart = generation.slice(0, htmlEndIndex + 7).replace(/```html|```/g, '')// Get the HTML document
-    //         const extraText = generation.slice(htmlEndIndex + 7).trim(); // Capture the text after </html>
-
-    //        // const finalhtml = htmlPart.replace(/```html|```/g, '')
-
-    //         setHtmlContent(htmlPart);
-    //         setExtraParagraph(extraText); // Store extra paragraph
-    //       } else {
-    //         setHtmlContent(generation); // If no </html> is found, treat the entire content as HTML
-    //       }
-    //     }, [generation]);
-
-    //     useEffect(() => {
-    //         const fetchPredictions = async () => {
-    //             const predictions = await googlePlacesAutoComplete(searchSourceCitystring);
-    //             setSourceCityPredictions(predictions || []);
-    //         }
-    //         fetchPredictions()
-    //     }, [searchSourceCitystring])
-
-
-    //     useEffect(() => {
-    //         const fetchPredictions = async () => {
-    //             const predictions = await googlePlacesAutoComplete(searchDestCitystring);
-    //             setDestCityPredictions(predictions || []);
-    //         }
-    //         fetchPredictions()
-    //     }, [searchDestCitystring])
-
-    //     useEffect(() => {
-    //         if (messagesRef.current) {
-    //           messagesRef.current.scrollTop = messagesRef.current.scrollHeight;
-    //         }
-    //       }, [messages]);
-
-    //     const [travel_type, setSelectedTravelType] = React.useState("")
-
-    //     const form = useForm<z.infer<typeof PromptSchema>>({
-    //         resolver: zodResolver(PromptSchema),
-    //         defaultValues: {
-    //             travel_dates: date,
-    //             source_city: "",
-    //             destination_city: "",
-    //             travel_type: travel_type,
-    //             ecological: false,
-    //             mass_tourism: false,
-    //             diving: false,
-    //             surfing: false,
-    //             hiking: false,
-    //             climbing: false,
-    //             sightseeing: false,
-    //             stops_inbetween: "0"
-    //         }
-    //     })
-
-    // const handleSuggestionSelect = (value: any) => {
-    //     console.log("SUGGESTION SELECTED", value)
-    // }
 
     return (
+       <> 
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
                 {/* Location Details Section */}
@@ -506,6 +433,15 @@ export default function GeneratorForm() {
                 </Button>
             </form>
         </Form>
+         {/* Itinerary Content Section */}
+         {!generatingResponse && (
+            <div className="border p-4 rounded-md bg-gray-50">
+                {htmlContent && parse(htmlContent)} {/* Ensure htmlContent is rendered directly */}
+            </div>
+        )}
+            {error && <p className='text-destructive'>Unexpected error occured, please try again</p>}
+       </>
+        
     )
 }
 
