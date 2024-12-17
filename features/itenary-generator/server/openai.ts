@@ -4,32 +4,17 @@
 
 import { openai } from '@ai-sdk/openai';
 import * as z from "zod"
-import { PromptSchema } from "@/features/itenary-generator/schemas/index";
 import { createStreamableValue } from 'ai/rsc';
 import { streamText } from 'ai';
+import { formSchema } from '../schemas';
+
 
 
 const model = process.env.OPENAI_MODEL || 'gpt-4o-mini';
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-// export const config = {
-//   runtime: "edge",
-// };
 
 const getPrompt = ({ source_city, destination_city, mass_tourism, ecological, travel_type, activities, stops_inbetween, travel_dates }: any) =>
-  // `
-  // Plan a trip as a ${travel_type === 'alone' ? 'solo traveler' : travel_type} and create a presentation that includes:
-
-  // Introduction
-  // Logistics Table: Vaccines, currency, safety, capital, religion, language, etc. (Render in HTML).
-  // Trip Details: From ${source_city} to ${destination_city ? destination_city : '[Destination not yet specified]'}, between ${travel_dates.from} and ${travel_dates.to}. Include stops (up to ${stops_inbetween}) along the route with activities, coordinates (!!latitude, longitude!!), and transport options. One day at the start and end points.
-  // Conclusion: Advice and possible next steps.
-  // Notes:
-  // ${mass_tourism ? '- Avoid mass tourism.' : ''} ${ecological ? '- Minimize air travel for ecological concerns.' : ''}
-
-  // Ensure safety throughout.
-  // Preferred activities: ${activities}
-  // `
   `
   Ignore all the previous information. I want to plan a trip ${travel_type === 'solo' ? 'alone' : `as a ${travel_type}`}. You will need to generate a presentation of my future trip. Organize this presentation as follows:
 
@@ -47,7 +32,7 @@ const getPrompt = ({ source_city, destination_city, mass_tourism, ecological, tr
 
   I am open to travel by bus, train, car, van, bicycle, airplane.
 
-  My trip takes place between ${travel_dates.from.substring(0, 10)} and ${travel_dates.to.substring(0, 10)}.
+  My trip takes place between ${travel_dates.from} and ${travel_dates.to}.
 
   I will depart from ${source_city}, to arrive in ${destination_city}.
 
@@ -59,37 +44,34 @@ const getPrompt = ({ source_city, destination_city, mass_tourism, ecological, tr
 `
 
 
-const getActivities = (sightseeing: boolean, hiking: boolean, climbing: boolean, diving: boolean, surfing: boolean) => {
+const getActivities = (sightseeing: boolean, hiking: boolean, climbing: boolean, diving: boolean) => {
   const activities = [];
 
   if (sightseeing) activities.push('sightseeing');
   if (hiking) activities.push('hiking');
   if (climbing) activities.push('climbing');
   if (diving) activities.push('diving');
-  if (surfing) activities.push('surfing');
 
   // this will pass a reference of the array created in this function
   return activities;
 }
-export const streamAIResponse = async (userData: z.infer<typeof PromptSchema>) => {
+export const streamAIResponse = async (userData: z.infer<typeof formSchema>) => {
   const stream = createStreamableValue('');
 
   //  const forbiddenWords = ['prompts', 'prompt', 'ignore', 'sensitive', 'API', 'injections', 'hack'];
   // zod validation
-  const validatedData = PromptSchema.safeParse(userData)
+  const validatedData = formSchema.safeParse(userData)
   if (validatedData?.error) {
     return { error: "Please enter valid data" }
   }
 
   // Extract data from validated schema (zod)
-  const { source_city, destination_city, sightseeing, hiking, diving, climbing, surfing, travel_dates, travel_type, mass_tourism, ecological } = validatedData?.data
-  const activities = getActivities(sightseeing, hiking, climbing, diving, surfing);
+  const { source_city, destination_city, sightseeing, hiking, diving, climbing, travel_dates, travel_type, mass_tourism, ecological, stops_inbetween } = validatedData?.data
+  const activities = getActivities(!!sightseeing, !!hiking, !!climbing, !!diving);
 
   // if no travel dates are specified, return error message
   if (!travel_dates) return { error: "No travel dates specified" }
 
-  // this will pass a reference of the array created in this function
-  const { from, to } = travel_dates;
 
   // Prepare the prompt body parameters
   const promptBodyParameters: any = {
@@ -99,11 +81,8 @@ export const streamAIResponse = async (userData: z.infer<typeof PromptSchema>) =
     ecological,
     travel_type,
     activities,
-    stops_inbetween: '0',
-    travel_dates: {
-      from: from?.toISOString(),
-      to: to?.toISOString(),
-    },
+    stops_inbetween,
+    travel_dates
   }
   console.log("OPENAI KEY", process.env.OPENAI_API_KEY)
   // OpenAI API Key setup
@@ -111,12 +90,6 @@ export const streamAIResponse = async (userData: z.infer<typeof PromptSchema>) =
     throw new Error('Missing OpenAI API key');
   }
 
-  // const configuration = new Configuration({
-  //   apiKey: OPENAI_API_KEY,
-  // });
-  // const openai = new OpenAI({
-  //   apiKey: OPENAI_API_KEY,
-  // });
 
   // Prepare the prompt using a helper function (getPrompt)
   const question = getPrompt(promptBodyParameters);
@@ -151,8 +124,9 @@ export const streamAIResponse = async (userData: z.infer<typeof PromptSchema>) =
     return { output: error}
 
   }
-  // stream chunks from chatComplettion
 
-  // // Return the AI response
-  // return chatCompletion?.toReadableStream();
 }
+
+
+
+
