@@ -18,3 +18,28 @@ export const formSchema = z.object({
     climbing: z.boolean().optional(),
     sightseeing: z.boolean().optional(),
 });
+
+export interface TripDetails {
+    source_city?: string;
+    destination_city?: string;
+    travel_dates?: {
+        from?: Date;
+        to?: Date;
+    };
+    travel_type?: string;
+    stops_inbetween?: string;
+    mass_tourism?: boolean;
+    ecological?: boolean;
+    hiking?: boolean;
+    diving?: boolean;
+    climbing?: boolean;
+    sightseeing?: boolean;
+}
+
+
+export interface TripSummaryProps {
+    tripDetails?: TripDetails;
+    onGenerateItinerary?: () => void;
+    onEditDetails: () => void;
+  }
+  

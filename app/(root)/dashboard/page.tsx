@@ -92,7 +92,7 @@ export default function DashboardPage() {
       </CardDescription>
     </CardHeader>
     <CardContent>
-      <Link href="/itenary-generator">
+      <Link href="/generator">
         <Button className="w-full sm:w-auto">
           <PlusCircle className="mr-2 h-4 w-4" /> Create New Itinerary
         </Button>
