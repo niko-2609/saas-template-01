@@ -41,6 +41,41 @@ const getPrompt = ({ source_city, destination_city, mass_tourism, ecological, tr
   ${stops_inbetween !== "0" ? `The possible intermediate steps of the trip are: ${stops_inbetween}. Add steps in other countries or cities on the same route. Make a logical route.` : ''}
   
   Render the entire itenary in HTML.
+
+  Please format the response as HTML with the following structure:
+  <div class="itinerary-container">
+    <h2 class="text-2xl font-bold mb-4">Trip Itinerary</h2>
+    
+    <!-- Logistical Information Table -->
+    <div class="mb-8">
+        <h3 class="text-xl font-semibold mb-4">Essential Travel Information</h3>
+        <table class="w-full border-collapse">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border p-3 text-left">Category</th>
+                    <th class="border p-3 text-left">Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="border p-3 font-medium">Vaccines Required</td>
+                    <td class="border p-3">[Vaccine Information]</td>
+                </tr>
+                <tr>
+                    <td class="border p-3 font-medium">Currency</td>
+                    <td class="border p-3">[Currency Details]</td>
+                </tr>
+                <!-- Add more rows for safety, language, etc. -->
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Daily Itinerary -->
+    <div class="day-container mb-6">
+        <h3 class="text-xl font-semibold text-blue-600">Day 1</h3>
+        ...
+    </div>
+  </div>
 `
 
 
@@ -98,7 +133,7 @@ export const streamAIResponse = async (userData: z.infer<typeof formSchema>) => 
   try {
     // Call OpenAI API to generate a chat completion
     (async () => {
-      const { textStream } = await streamText({
+      const { textStream } = streamText({
         model: openai(model), // Define the model here
         temperature: 0,
         messages: [
