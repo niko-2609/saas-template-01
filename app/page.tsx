@@ -279,7 +279,7 @@ export default function LandingPage() {
       </section>
 
       {/* Testimonials Section */}
-      <section className="bg-background py-16 px-6 text-center space-y-6 my-12">
+      {/* <section className="bg-background py-16 px-6 text-center space-y-6 my-12">
         <h3 className="text-md text-bold text-slate-500">WHAT OUR USERS SAY</h3>
         <p className="text-3xl md:text-4xl font-bold max-w-2xl mx-auto">
           Real experiences from happy travelers
@@ -313,7 +313,7 @@ export default function LandingPage() {
             </CardContent>
           </Card>
         </div>
-      </section>
+      </section> */}
 
       {/* Footer */}
       <footer className="bg-background py-6  border-t">

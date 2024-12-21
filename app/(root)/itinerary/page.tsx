@@ -6,11 +6,13 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { startTransition, useEffect, useRef, useState } from 'react';
 import { streamAIResponse } from "@/features/itenary-generator/server/openai";
 import { readStreamableValue } from "ai/rsc";
-import parse from 'html-react-parser';
 import { useChat } from 'ai/react';
 import { Button } from '@/components/ui/button';
 import { formSchema } from '@/features/itenary-generator/schemas';
 import TripSummary from '@/features/itenary-generator/_components/tripSummary';
+import { saveItinerary } from "@/features/itenary-generator/server/itineraryService";
+import { useSession } from 'next-auth/react';
+import { Loader2 } from 'lucide-react';
 
 
 
@@ -35,8 +37,17 @@ export default function ItineraryDisplayPage() {
     const [error, setError] = useState<string | null>(null);
     const [htmlContent, setHtmlContent] = useState('');
     const [extraParagraph, setExtraParagraph] = useState('');
-   // const [pending, setGeneratingResponse] = useState<boolean>(false);
     const router = useRouter();
+    const [ isSaving, setIsSaving] = useState<boolean | null>(null);
+    const [ isDownloading, setIsDownloading] = useState<boolean | null>(null);
+    const [ validatedValues, setValidatedValues] = useState<any>(null);
+    const { data: session} = useSession()
+    const userId = session?.user?.id
+    
+    if (!userId) {
+        throw new Error("No user found")
+    }
+
     // Decode the URL-encoded data string and parse it
     let data;
 
@@ -72,35 +83,69 @@ export default function ItineraryDisplayPage() {
     const generateResponse = async () => {
         setHtmlContent('')
         setItinerary('')
-      
-        // Start the generation immediately when component mounts
-    startTransition(async () => {
-        try {
-             (async () => {
-                try {
+        setError(null)
 
-                    const validatedValues = formSchema.parse(data)
-                    const { output } = await streamAIResponse(validatedValues);
-                    for await (const delta of readStreamableValue(output)) {
-                        setItinerary(itinerary => `${itinerary}${delta}`);
+        startTransition(async () => {
+            try {
+                 (async () => {
+                    try {
+    
+                        const validatedValuesFromParams = formSchema.parse(data)
+                        setValidatedValues(validatedValuesFromParams);
+                        const { output } = await streamAIResponse(validatedValuesFromParams);
+                        for await (const delta of readStreamableValue(output)) {
+                            setItinerary(itinerary => `${itinerary}${delta}`);
+                        }
+                    } catch (error) {
+                        console.error('Error during itinerary generation:', error);
+                        setError('Failed to generate itinerary. Please try again.');
+                    } finally {
+                        setPending(false);
                     }
+                })()
+            } catch (error) {
+                console.error('Error during itinerary generation:', error);
+                setError('Failed to generate itinerary. Please try again.');
+            } finally {
+                setPending(false);
+            }
+        });
+        }   
+
+
+        const saveItineraryToCloud = async () => {
+            if (htmlContent !== '') {
+                try {
+                    setIsSaving(true);
+                    const response = await saveItinerary(userId, validatedValues, htmlContent);
+                    console.log("RESPONSE FROM DB SAVE", response);
                 } catch (error) {
-                    console.error('Error during itinerary generation:', error);
-                    setError('Failed to generate itinerary. Please try again.');
+                    console.error("Error saving itinerary:", error);
+                    setError("Failed to save itinerary");
                 } finally {
-                    setPending(false);
+                    setIsSaving(false);
                 }
-            })()
-        } catch (error) {
-            console.error('Error during itinerary generation:', error);
-            setError('Failed to generate itinerary. Please try again.');
-        } finally {
-            setPending(false);
-        }
-    });
-    }
+            } else {
+                setError("Nothing to save, please generate an itinerary first.");
+            }
+        };
 
-
+        const downloadItinerary = async () => {
+            if (htmlContent !== '') {
+                try {
+                    setIsDownloading(true);
+                    await saveItinerary(userId, validatedValues, htmlContent);
+                } catch (error) {
+                    console.error("Error downloading itinerary:", error);
+                    setError("Failed to download itinerary");
+                } finally {
+                    setIsDownloading(false);
+                }
+            } else {
+                setError("Nothing to download, please generate an itinerary first.");
+            }
+        };
+      
 
     useEffect(() => {
         const htmlEndIndex = itinerary.indexOf('</html>');
@@ -147,7 +192,7 @@ export default function ItineraryDisplayPage() {
             {error && <p className="text-red-500 mt-10">{error}</p>}
              {/* Itinerary Content Section */}
          {!pending && !error && (
-            <div className="border p-4 rounded-md bg-gray-50">
+            <div className="border p-4 rounded-md bg-gray-50 mt-10">
                 <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
             </div>
         )}
@@ -167,6 +212,34 @@ export default function ItineraryDisplayPage() {
                 font-weight: 600;
             }
         `}</style>
+
+       {htmlContent !== '' && (
+         <div className="flex justify-evenly mt-8">
+         <Button 
+            onClick={() => void saveItineraryToCloud()} 
+            disabled={isSaving || !htmlContent}
+         >
+            {isSaving ? (
+                <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Saving Itinerary...
+                </>
+            ) : (
+                'Save Itinerary'
+            )}
+         </Button>
+         <Button onClick={downloadItinerary} disabled={!!isDownloading}>
+           {isDownloading ? (
+             <>
+               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+               Downloading Itinerary...
+             </>
+           ) : (
+             'Download as pdf'
+           )}
+         </Button>
+         </div>
+       )}
         </div>
     );
 }

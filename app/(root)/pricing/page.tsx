@@ -22,11 +22,9 @@ export default function Pricing() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState("")
   const handleSelect = (planId: any) => {
-    console.log("SELECTED PLAN ID", planId);
 
 
     if (status === "authenticated") {
-      console.log("SESSION", session)
       const userId = session?.user?.id
       console.log("USER ID", userId)
       if (selectedCard === planId) {

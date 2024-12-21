@@ -1,10 +1,13 @@
+"use client"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Users, ArrowLeft, Loader2, AlertTriangle, Plane, Train, Car, Ship, MapPin, Navigation, Compass, Leaf, Mountain, Waves, FootprintsIcon as ClimbingShoe, Camera } from 'lucide-react'
+import { Calendar, Users, ArrowLeft, Loader2, AlertTriangle, Plane, Train, Car, Ship, MapPin, Navigation, Compass, Leaf, Mountain, Waves, FootprintsIcon as ClimbingShoe, Camera, UserRoundIcon } from 'lucide-react'
 import { useState } from "react"
 import { TripSummaryProps } from "../schemas"
 import { format } from "date-fns";
+import { saveItinerary } from "../server/itineraryService"
+import { useSession } from "next-auth/react"
 
 
 
@@ -32,7 +35,7 @@ const TravelTypeIcon = ({ type }: { type?: string }) => {
 };
 
 const PreferenceBadge = ({ label, value, icon: Icon }: { label: string; value?: boolean; icon: any }) => (
-  <Badge variant={value ? "secondary" : "default"} className="mr-2 mb-2">
+  <Badge variant={value ? "default" : "secondary"} className="mr-2 mb-2">
     <Icon className="w-3 h-3 mr-1" />
     {label}
   </Badge>
@@ -41,9 +44,12 @@ const PreferenceBadge = ({ label, value, icon: Icon }: { label: string; value?: 
 export default function TripSummary({ 
   tripDetails, 
   onGenerateItinerary = () => {}, 
-  onEditDetails 
+  onEditDetails, 
 }: TripSummaryProps) {
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isSavingToCloud, setIsSavingToCloud ] = useState(false)
+  const { data: session } = useSession()
+  const userId = session?.user?.id
 
   console.log(tripDetails)
 
@@ -56,6 +62,7 @@ export default function TripSummary({
     }
     setIsGenerating(false);
   };
+
 
   if (!tripDetails) {
     return (
@@ -108,10 +115,10 @@ export default function TripSummary({
           </div>
         )}
         <div>
-          <span className="font-medium mb-2 block">Preferences:</span>
-          <div className="flex flex-wrap">
-            <PreferenceBadge label="Mass Tourism" value={tripDetails?.mass_tourism} icon={Users} />
-            <PreferenceBadge label="Ecological" value={tripDetails?.ecological} icon={Leaf} />
+          <span className="font-medium font-bold mb-2 block">Preferences:</span>
+          <div className="flex flex-1 justify-between mt-5">
+            {/* <PreferenceBadge label="Mass Tourism" value={tripDetails?.mass_tourism} icon={Users} /> */}
+            {/* <PreferenceBadge label="Ecological" value={tripDetails?.ecological} icon={Leaf} /> */}
             <PreferenceBadge label="Hiking" value={tripDetails?.hiking} icon={Mountain} />
             <PreferenceBadge label="Diving" value={tripDetails?.diving} icon={Waves} />
             <PreferenceBadge label="Climbing" value={tripDetails?.climbing} icon={ClimbingShoe} />
@@ -128,7 +135,7 @@ export default function TripSummary({
           {isGenerating ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Generating...
+              Generating Itinerary...
             </>
           ) : (
             'Generate Itinerary'
