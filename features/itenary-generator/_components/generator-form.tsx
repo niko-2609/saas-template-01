@@ -50,6 +50,23 @@ function formatSuggestions(str: string) {
 
 
 const libraries: Libraries = ["places"];
+const defaultValues = {
+    source_city: '',
+    destination_city: '',
+    travel_dates: {
+        from: undefined,
+        to: undefined
+    },
+    travel_type: '',
+    stops_inbetween: '',
+    mass_tourism: false,
+    ecological: false,
+    hiking: false,
+    diving: false,
+    climbing: false,
+    sightseeing: false
+};
+
 export default function GeneratorForm() {
 
     const [sourceCityPredictions, setSourceCityPredictions] = useState<any>(null);
@@ -67,21 +84,9 @@ export default function GeneratorForm() {
     const [pending, setPending] = useState(false);
 
 
-    const form = useForm({
+    const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
-        defaultValues: {
-            source_city: "",
-            destination_city: "",
-            travel_dates: { from: undefined, to: undefined }, // Changed from null to match schema
-            travel_type: "",
-            stops_inbetween: "0",
-            mass_tourism: false,
-            ecological: false,
-            hiking: false,
-            diving: false,
-            climbing: false,
-            sightseeing: false,
-        },
+        defaultValues
     });
 
 
@@ -331,16 +336,16 @@ export default function GeneratorForm() {
                             <div className="space-y-4">
                                 <h3 className="text-2xl font-semibold text-slate-800 mb-6">Preferred Activities</h3>
                                 <div className="flex items-center justify-between gap-4">
-                                    {['Hiking', 'Diving', 'Climbing', 'Sightseeing'].map((activity) => (
+                                    {['hiking', 'diving', 'climbing', 'sightseeing'].map((activity) => (
                                         <FormField
                                             key={activity}
                                             control={form.control}
-                                            name={activity as any}
+                                            name={activity.toLowerCase() as keyof z.infer<typeof formSchema>}
                                             render={({ field }) => (
                                                 <FormItem className="flex items-center space-x-2 flex-1">
                                                     <FormControl>
                                                         <Checkbox
-                                                            checked={field.value}
+                                                            checked={field.value as boolean}
                                                             onCheckedChange={field.onChange}
                                                             className="flex p-2 mt-2"
                                                         />
@@ -365,10 +370,10 @@ export default function GeneratorForm() {
                         {pending ? (
                             <div className="flex items-center space-x-2">
                                 <span className="animate-spin">⏳</span>
-                                <span>Generating itinerary...</span>
+                                <span>Submitting details...</span>
                             </div>
                         ) : (
-                            "Generate Itinerary"
+                            "Submit details"
                         )}
                     </Button>
                 </form>
