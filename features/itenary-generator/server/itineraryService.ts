@@ -123,4 +123,18 @@ function extractTransportationMode(content: string): string | undefined {
   const transportPattern = /by\s+(train|bus|car|airplane|bicycle|van)/i;
   const match = content.match(transportPattern);
   return match ? match[1].toLowerCase() : undefined;
+}
+
+export async function getUserItineraries(userId: string) {
+  await dbConnect();
+  const itineraries = await ItineraryModel.find({ userId })
+    .sort({ createdAt: -1 })
+    .lean();
+  return JSON.parse(JSON.stringify(itineraries));
+}
+
+export async function getItineraryById(id: string) {
+  await dbConnect();
+  const itinerary = await ItineraryModel.findById(id).lean();
+  return JSON.parse(JSON.stringify(itinerary));
 } 
