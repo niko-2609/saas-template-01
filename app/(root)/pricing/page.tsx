@@ -3,128 +3,229 @@
 // pages/pricing.js
 "use client"
 
-// useEffect
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PlanCard from '@/features/payments/_components/planCard';
 import { usePlans } from '@/features/payments/_components/plansContext';
 import Script from 'next/script';
 import { useSession } from "next-auth/react"
-import { activateSubscription, updateSubscriptions } from '@/features/payments/server/subscriptions';
+import { useAppDispatch, useAppSelector } from "@/features/store/hooks";
+import { 
+  initiateSubscription, 
+  verifyPayment, 
+  resetPaymentState 
+} from "@/features/store/slices/paymentSlice";
 import { useRouter } from 'next/navigation'
+import { Spinner } from '@/components/ui/spinner';
+import { AlertCircle } from 'lucide-react';
+import { PricingCardSkeleton } from "@/features/payments/_components/pricing-card-skeleton";
 
+interface PaymentResponse {
+  razorpay_payment_id: string;
+  razorpay_subscription_id: string;
+  razorpay_signature: string;
+}
 
 export default function Pricing() {
-
   const router = useRouter();
-  const plans: any = usePlans();
+  const { plans, isLoading: plansLoading } = usePlans();
   const { data: session, status } = useSession()
-  const [selectedCard, setSelectedCard] = useState<string | null>(process.env.NEXT_PUBLIC_DEFAULT_PLAN_ID ? process.env.NEXT_PUBLIC_DEFAULT_PLAN_ID : null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState("")
-  const handleSelect = (planId: any) => {
+  const [selectedCard, setSelectedCard] = useState<string | null>(
+    process.env.NEXT_PUBLIC_DEFAULT_PLAN_ID ?? null
+  );
+  const dispatch = useAppDispatch();
+  const { 
+    isProcessing, 
+    error: paymentError, 
+    paymentStatus 
+  } = useAppSelector((state) => state.payment);
 
+  useEffect(() => {
+    // Reset payment state when component mounts
+    dispatch(resetPaymentState());
+  }, [dispatch]);
 
-    if (status === "authenticated") {
-      const userId = session?.user?.id
-      console.log("USER ID", userId)
-      if (selectedCard === planId) {
-        console.log('Proceeding with payment for plan:', planId);
-        proceedWithSubscription(userId, planId)
-  
-  
-      }
-      if (selectedCard !== planId) {
-        setSelectedCard((prev) => (prev === planId ? null : planId)); // Only set if it's a new selection
-      }
+  useEffect(() => {
+    // Handle payment status changes
+    if (paymentStatus === 'success') {
+      router.push('/payment/success');
+    }
+  }, [paymentStatus, router]);
+
+  const handleSelect = async (planId: string) => {
+    if (status !== "authenticated") {
+      router.push('/sign-in');
+      return;
+    }
+
+    if (selectedCard === planId) {
+      await proceedWithSubscription(session?.user?.id, planId);
     } else {
-      console.log("USER NOT AUTHENTICATED")
+      setSelectedCard(planId);
     }
   };
 
   const proceedWithSubscription = async (userId: string | undefined, planId: string) => {
-    // Add your payment logic setError(null);
-    setIsProcessing(true);
+    if (!userId) return;
 
-    // create new subscription and fetch subscription id
     try {
-      const data = await activateSubscription(userId, planId);
-      //Initialize Razorpay
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        subscription_id: data?.id,
-        description: "Monthly subscription testing",
-        handler: async function (response: any) {
-          console.log(response.razorpay_subscription_id, response.razorpay_payment_id, response.razorpay_signature)
-          // Update the subscription status in your database
-        
-          const result = await updateSubscriptions(userId, response.razorpay_payment_id, data?.id, response.razorpay_signature, response.razorpay_subscription_id)
+      const result = await dispatch(initiateSubscription({ userId, planId })).unwrap();
+      
+      // Only proceed with Razorpay if we have a valid subscription ID
+      if (result?.subscriptionId) {
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          subscription_id: result.subscriptionId,
+          description: "Monthly Plan Subscription",
+          handler: async (response: PaymentResponse) => {
+            try {
+              await dispatch(verifyPayment({
+                userId,
+                paymentId: response.razorpay_payment_id,
+                subscriptionId: result.subscriptionId,
+                signature: response.razorpay_signature,
+                razorpaySubscriptionId: response.razorpay_subscription_id
+              })).unwrap();
+              
+              // Only redirect on successful payment
+              router.push('/payment/success');
+            } catch (error) {
+              console.error('Payment verification failed:', error);
+              // Stay on page and show error
+            }
+          },
+          modal: {
+            ondismiss: () => {
+              dispatch(resetPaymentState());
+            }
+          },
+          prefill: {
+            name: session?.user?.name ?? "",
+            email: session?.user?.email ?? "",
+          },
+          theme: {
+            color: "#3399cc",
+          },
+        };
 
-          if (result?.error) {
-            router.push('/payment/error');
-          }
-          router.push('/payment/success')
-          /** 
-           * Handle successfull payment here
-           * We get the following here 
-           * 1. razorpay_payment_id
-           * 2. razorpay_order_id
-           * 3. razorpay_signature
-           * 
-           * 
-           * We need to store these fields in your database along with customer id
-           * We can confirm the authenticity of these details by verifying the signature in the next step.
-           */
-        },
-        prefill: { // prefill is recommended, it auto-fills customer contact information, specially thier phone number.
-          name: "John Doe",
-          email: "johndoe@example.com",
-          contact: "9999999999", // Provide customer's phone number for better conversion rates
-        },
-        theme: {
-          color: "#3399cc",
-        },
-      };
-
-      // open razorpay checkout window
-      const rzp1 = new window.Razorpay(options);
-      rzp1.open();
+        const rzp1 = new (window as any).Razorpay(options);
+        rzp1.open();
+      }
     } catch (error: any) {
-      setError(error);
-      router.push(`/payment/error?error=${encodeURIComponent('SERVER_ERROR')}`);
-    } finally {
-      setIsProcessing(false);
+      // The error is already handled by the slice's rejected case
+      console.error('Payment initiation failed:', error);
     }
   };
 
+  // Improved error banner with auto-dismiss and better styling
+  const ErrorBanner = ({ message }: { message: string }) => {
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        dispatch(resetPaymentState());
+      }, 5000);
 
+      return () => clearTimeout(timer);
+    }, []);
 
-  return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-
-
-      {/* Loading overlay */}
-      {isProcessing && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 transition-opacity duration-300 ease-in-out">
-          <div className="text-white text-lg font-semibold animate-pulse">
-            Processing...
+    return (
+      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
+        <div className="bg-destructive px-6 py-4 rounded-lg shadow-lg">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-white" />
+            <p className="text-white font-medium">{message}</p>
           </div>
         </div>
-      )}
-
-      {/* Pricing Page Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-xl font-semibold">Pricing</h1>
-        <h2 className="text-5xl font-bold">Choose the right plan for you</h2>
-        <p className="text-base text-muted-foreground max-w-xl mx-auto">
-          Choose an affordable plan that’s packed with the best features for engaging your audience,
-          creating customer loyalty, and driving sales.
-        </p>
       </div>
+    );
+  };
 
-      {/* Pricing Cards */}
-      <div className="flex flex-col md:flex-row gap-6 justify-center">
-        {plans?.map((plan: any) => <PlanCard key={plan.id} plan={plan} handleSelect={handleSelect} selectedCard={selectedCard} />)}
+  const renderContent = () => {
+    if (plansLoading) {
+      return (
+        <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch bg-gray-50">
+          <PricingCardSkeleton />
+          <PricingCardSkeleton />
+        </div>
+      );
+    }
+
+    if (!plans?.length) {
+      return (
+        <div className="text-center text-muted-foreground min-h-[400px] flex items-center justify-center">
+          No plans available at the moment.
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
+        {plans.map((plan) => (
+          <PlanCard 
+            key={plan.id} 
+            plan={plan} 
+            handleSelect={handleSelect} 
+            selectedCard={selectedCard} 
+          />
+        ))}
+      </div>
+    );
+  };
+
+  return (
+    // <div className="min-h-screen flex flex-col">
+    //   <div className="flex-grow max-w-4xl mx-auto p-6 space-y-8">
+    //     <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+
+    //     {/* Show error banner if there's an error */}
+    //     {paymentError && <ErrorBanner message={paymentError} />}
+
+    //     {/* Loading overlay for payment processing */}
+    //     {isProcessing && (
+    //       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+    //         <div className="bg-white p-8 rounded-lg shadow-lg flex flex-col items-center">
+    //           <Spinner size="lg" />
+    //           <p className="mt-4 text-lg font-medium">Processing your payment...</p>
+    //         </div>
+    //       </div>
+    //     )}
+
+    //     <div className="text-center space-y-4">
+    //       <h1 className="text-xl font-semibold">Pricing</h1>
+    //       <h2 className="text-5xl font-bold">Choose the right plan for you</h2>
+    //       <p className="text-base text-muted-foreground max-w-xl mx-auto">
+    //         Choose an affordable plan that&apos;s packed with the best features for engaging your audience,
+    //         creating customer loyalty, and driving sales.
+    //       </p>
+    //     </div>
+
+    //     {renderContent()}
+    //   </div>
+    // </div>
+
+    <div className="min-h-screen flex flex-col bg-gray-50">
+      <div className="flex-grow max-w-4xl mx-auto p-6 space-y-8">
+        <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+
+        {paymentError && <ErrorBanner message={paymentError} />}
+
+        {isProcessing && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-lg shadow-lg flex flex-col items-center">
+              <Spinner size="lg" className="text-[#019992]" />
+              <p className="mt-4 text-lg font-medium">Processing your payment...</p>
+            </div>
+          </div>
+        )}
+
+        <div className="text-center space-y-4">
+          <h1 className="text-xl font-semibold text-[#019992]">Pricing</h1>
+          <h2 className="text-4xl font-bold text-gray-800">Choose the right plan for you</h2>
+          <p className="text-base text-gray-600 max-w-xl mx-auto">
+            Choose an affordable plan that&apos;s packed with the best features for engaging your audience,
+            creating customer loyalty, and driving sales.
+          </p>
+        </div>
+
+        {renderContent()}
       </div>
     </div>
   );

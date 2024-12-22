@@ -13,6 +13,8 @@ import TripSummary from '@/features/itenary-generator/_components/tripSummary';
 import { saveItinerary } from "@/features/itenary-generator/server/itineraryService";
 import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
+import { useAppDispatch } from "@/features/store/hooks"
+import { fetchDashboardStats } from "@/features/store/slices/dashboardSlice"
 
 
 
@@ -43,6 +45,7 @@ export default function ItineraryDisplayPage() {
     const [ validatedValues, setValidatedValues] = useState<any>(null);
     const { data: session} = useSession()
     const userId = session?.user?.id
+    const dispatch = useAppDispatch();
     
     if (!userId) {
         throw new Error("No user found")
@@ -119,6 +122,7 @@ export default function ItineraryDisplayPage() {
                     setIsSaving(true);
                     const response = await saveItinerary(userId, validatedValues, htmlContent);
                     console.log("RESPONSE FROM DB SAVE", response);
+                    dispatch(fetchDashboardStats(userId));
                 } catch (error) {
                     console.error("Error saving itinerary:", error);
                     setError("Failed to save itinerary");
