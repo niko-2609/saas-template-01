@@ -4,58 +4,59 @@
 import { db } from "@/features/db/db"
 import { verifySubscription } from "../utils/verifySubscription";
 
-export const activateSubscription = async (userId : any, planId : any) => {
-
-    if (!userId) {
-        throw new Error("User ID is required");
-    }
-
-    // get user from db
-    const user = await db.user.findUnique({
-        where :{ 
-            id: userId,
+export const activateSubscription = async (userId: any, planId: any) => {
+    try {
+        if (!userId) {
+            return { error: "User ID is required" };
         }
-    });
 
-    // return if user not found
-    if (!user) {
-        throw new Error("User not found");
-    }
+        // get user from db
+        const user = await db.user.findUnique({
+            where: { 
+                id: userId,
+            }
+        });
 
-    // check if user already has a subscription
-    const subscription = await db.subscription.findFirst({
-        where: {
-            userId: userId,
+        if (!user) {
+            return { error: "User not found" };
         }
-    });
 
-    if (subscription) {
-        throw new Error("User already has a subscription");
+        // check if user already has a subscription
+        const subscription = await db.subscription.findFirst({
+            where: {
+                userId: userId,
+            }
+        });
+
+        if (subscription) {
+            return { error: "User already has an active subscription" };
+        }
+
+        const authToken = btoa(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`);
+        const options: any = {
+            method: 'POST',
+            headers: {
+                'Authorization': 'Basic ' + authToken,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                plan_id: planId,
+                quantity: 1,
+                total_count: 12
+            })
+        }
+
+        const newSubscription = await fetch(`https://api.razorpay.com/v1/subscriptions/`, options);
+        const data = await newSubscription.json();
+        
+        if (data?.error) {
+            return { error: data.error.description || 'Razorpay error occurred' };
+        }
+
+        return data;
+    } catch (error) {
+        return { error: error instanceof Error ? error.message : 'Unknown error occurred' };
     }
-
-
-    const authToken = btoa(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`);
-    const options:any = {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Basic ' + authToken,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            plan_id: planId,
-            quantity: 1,
-            total_count: 12
-        })
-    }
-    // create new subscription
-    const newSubscription = await fetch(`https://api.razorpay.com/v1/subscriptions/`, options);
-    const data = await newSubscription.json();
-    
-    if (data?.error) {
-        throw new Error(`HTTP error! status: ${data?.error?.code}`);
-    }
-
-    return data;
 }
 
 
