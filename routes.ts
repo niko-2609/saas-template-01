@@ -6,7 +6,10 @@
 export const publicRoutes: string[] = [
     "/",
     "/sign-in",
-    "/about"
+    "/about",
+    "/privacy-policy",
+    "/terms-of-service",
+    "/contact-us"
 ]
 
 
@@ -41,4 +44,4 @@ export const DEFAULT_LOGIN_REDIRECT: string = "/dashboard"
  * The default redirect path when user is not logged in
  * @type {string}
  */
-export const DEFAULT_PUBLIC_REDIRECT: string = "/sign-in"
+export const DEFAULT_PUBLIC_REDIRECT: string = "/"

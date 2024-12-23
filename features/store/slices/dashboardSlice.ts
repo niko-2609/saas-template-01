@@ -16,10 +16,10 @@ const initialState: DashboardState = {
   totalItineraries: 0,
   upcomingTrips: 0,
   daysPlanned: 0,
-  favoriteDestination: '',
+  favoriteDestination: 'None',
   recentItineraries: [],
   error: null,
-  isLoading: false,
+  isLoading: true,
 };
 
 const calculateFavoriteDestination = (itineraries: any[]) => {
@@ -34,23 +34,27 @@ const calculateFavoriteDestination = (itineraries: any[]) => {
 export const fetchDashboardStats = createAsyncThunk(
   'dashboard/fetchStats',
   async (userId: string) => {
-    const allItineraries = await getUserItineraries(userId);
-    const now = new Date();
-    
-    return {
-      totalItineraries: allItineraries.length,
-      upcomingTrips: allItineraries.filter((itinerary: { tripDetails: { travelDates: { from: string | number | Date; }; }; }) => 
-        new Date(itinerary?.tripDetails?.travelDates.from) > now).length,
-      daysPlanned: allItineraries.reduce((acc: number, itinerary: any) => {
-        const from = new Date(itinerary?.tripDetails?.travelDates.from);
-        const to = new Date(itinerary?.tripDetails?.travelDates.to);
-        const diffTime = Math.abs(to.getTime() - from.getTime());
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        return acc + diffDays;
-      }, 0),
-      favoriteDestination: calculateFavoriteDestination(allItineraries),
-      recentItineraries: allItineraries.slice(0, 3)
-    };
+    try {
+      const allItineraries = await getUserItineraries(userId);
+      const now = new Date();
+      
+      return {
+        totalItineraries: allItineraries.length,
+        upcomingTrips: allItineraries.filter((itinerary: { tripDetails: { travelDates: { from: string | number | Date; }; }; }) => 
+          new Date(itinerary?.tripDetails?.travelDates.from) > now).length,
+        daysPlanned: allItineraries.reduce((acc: number, itinerary: any) => {
+          const from = new Date(itinerary?.tripDetails?.travelDates.from);
+          const to = new Date(itinerary?.tripDetails?.travelDates.to);
+          const diffTime = Math.abs(to.getTime() - from.getTime());
+          const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+          return acc + diffDays;
+        }, 0),
+        favoriteDestination: calculateFavoriteDestination(allItineraries),
+        recentItineraries: allItineraries.slice(0, 3)
+      };
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : 'Failed to fetch dashboard stats');
+    }
   }
 );
 
