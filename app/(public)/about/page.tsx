@@ -4,14 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { Facebook, Twitter, Linkedin } from 'lucide-react'
+import BackToHomeButton from '@/components/shared/backToHomeButton'
 
 export default function AboutUs() {
   return (
+   <>
     <div className="min-h-screen flex flex-col bg-white">
       {/* Hero Section */}
       <header className="relative bg-cover bg-center py-32 px-6 text-center text-white" style={{backgroundImage: 'url("/images/hero-bg.jpg")'}}>
         <div className="absolute inset-0 bg-[#019992] opacity-80"></div>
-        <div className="relative z-10">
+        <div className="relative z-10 font-semibold">
           <motion.h1 
             className="text-5xl md:text-6xl font-bold mb-4"
             initial={{ opacity: 0, y: -20 }}
@@ -33,7 +35,7 @@ export default function AboutUs() {
 
       {/* Our Story Section */}
       <section className="bg-white py-20 px-6">
-        <div className="max-w-5xl mx-auto text-center space-y-6">
+        <div className="max-w-5xl mx-auto text-center space-y-6 font-semibold">
           <motion.h2 
             className="text-4xl font-bold text-[#019992]"
             initial={{ opacity: 0 }}
@@ -73,16 +75,16 @@ export default function AboutUs() {
               <CardHeader>
                 <CardTitle className="text-2xl font-semibold text-[#019992]">Our Mission</CardTitle>
               </CardHeader>
-              <CardContent className="text-lg text-gray-700">
-                To empower travelers with personalized recommendations, helping them discover new destinations and experiences effortlessly.
+              <CardContent className="text-lg text-gray-800">
+              To empower travelers with personalized recommendations, making every journey memorable and helping them discover effortlessly.
               </CardContent>
             </Card>
             <Card className="bg-white shadow-lg transition-transform hover:scale-105">
               <CardHeader>
-                <CardTitle className="text-2xl font-semibold text-[#019992]">Our Vision</CardTitle>
+                <CardTitle className="text-2xl font-bold text-[#019992]">Our Vision</CardTitle>
               </CardHeader>
-              <CardContent className="text-lg text-gray-700">
-                To be the go-to platform for seamless travel planning, making every journey memorable and every adventure uniquely yours.
+              <CardContent className="text-lg text-gray-800">
+              To be the go-to platform for seamless travel planning, making every journey truly memorable and every adventure uniquely yours.
               </CardContent>
             </Card>
           </div>
@@ -93,7 +95,7 @@ export default function AboutUs() {
       <section className="bg-white py-20 px-6">
         <div className="max-w-5xl mx-auto space-y-10 text-center">
           <h2 className="text-4xl font-bold text-[#019992]">Meet the Team</h2>
-          <p className="text-lg text-gray-700 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-700 max-w-3xl mx-auto font-semibold">
             Our team is made up of passionate travelers, tech enthusiasts, and problem solvers dedicated to making your travel planning as smooth as possible.
           </p>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
@@ -130,7 +132,7 @@ export default function AboutUs() {
         <div className="absolute inset-0 bg-[#019992] opacity-90"></div>
         <div className="relative z-10 max-w-4xl mx-auto">
           <h2 className="text-4xl font-bold mb-6">Join Us on Our Journey</h2>
-          <p className="text-xl max-w-2xl mx-auto mt-4 mb-8">
+          <p className="text-xl max-w-2xl mx-auto mt-4 mb-8 font-semibold">
             Ready to plan your next adventure with us? Sign up today and discover a new way to travel.
           </p>
           <Button 
@@ -143,6 +145,8 @@ export default function AboutUs() {
         </div>
       </section>
     </div>
+    <BackToHomeButton />
+   </>
   )
 }
 

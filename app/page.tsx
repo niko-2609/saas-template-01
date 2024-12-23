@@ -6,10 +6,12 @@ import { Input } from '@/components/ui/input';
 import { HelpCircleIcon } from 'lucide-react';
 import { TypewriterEffect } from "@/components/ui/typewriter-effect";
 import Image from 'next/image';
+import { useSession } from "next-auth/react";
 
 import contentImage1 from "@/public/assets/travel-16.png";
 import contentImage2 from "@/public/assets/travel-14.webp";
 import contentImage3 from "@/public/assets/travel-17.webp";
+import travelBackground2 from "@/public/assets/travel-5.jpeg";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 declare global {
@@ -19,13 +21,15 @@ declare global {
 }
 
 export default function LandingPage() {
+
+  const { data: session } = useSession();
   return (
     <div className="min-h-screen flex flex-col font-sans bg-white">
       {/* Updated Header Section */}
       <div className="relative bg-[#019992] text-white overflow-hidden">
         <div className="absolute inset-0 z-0">
           <Image
-            src="/images/travel-background.jpg"
+            src={travelBackground2}
             alt="Travel Background"
             layout="fill"
             objectFit="cover"
@@ -33,20 +37,22 @@ export default function LandingPage() {
           />
           <div className="absolute inset-0 bg-[#019992] opacity-70"></div>
         </div>
-        
+
         <div className="relative z-10">
           <nav className="flex justify-between items-center px-6 py-8">
             <h1 className="text-5xl font-bold font-sans">TRIPSY</h1>
             <div className="flex space-x-4">
               <Link href="/about">
-                <Button variant="ghost" className="text-white hover:text-[#ffb001] border border-white hover:border-[#ffb001]">About Us</Button>
+                <Button variant="ghost" className="text-white hover:text-[#ffb001] border border-white hover:border-[#ffb001] font-semibold">About Us</Button>
               </Link>
-              <Link href="/sign-in">
-                <Button variant="outline" className="bg-[#ffb001] text-white hover:bg-[#fb475e] border-none">Sign In</Button>
-              </Link>
+              {session ? null : (
+                    <Link href="/sign-in">
+                        <Button variant="outline" className="bg-[#ffb001] text-white hover:bg-[#fb475e] border-none font-semibold">Sign In</Button>
+                    </Link>
+                )}
             </div>
           </nav>
-          
+
           <header className="flex flex-col justify-center items-center text-center px-4 py-20 space-y-8">
             <TypewriterEffect
               staticText="PLAN YOUR PERFECT JOURNEY"
@@ -67,12 +73,22 @@ export default function LandingPage() {
                   className="pl-12 py-6 text-md text-[#019992] border-[#44ee77] placeholder:text-[#019992] bg-white rounded-full w-full"
                 />
               </div>
-              <Button className="bg-[#ffb001] text-white hover:bg-[#fb475e] rounded-full py-6 px-8 text-lg font-semibold transition-all duration-300 transform hover:scale-105">
-                Start Your Adventure
-              </Button>
+              {session ? (
+                            <Link href="/generator">
+                                <Button className="bg-[#ffb001] text-white hover:bg-[#fb475e] rounded-full py-6 px-8 text-lg font-semibold transition-all duration-300">
+                                    Start Your Adventure
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Link href="/sign-in">
+                                <Button className="bg-[#ffb001] text-white hover:bg-[#fb475e] rounded-full py-6 px-8 text-lg font-semibold transition-all duration-300">
+                                    Start Your Adventure
+                                </Button>
+                            </Link>
+                        )}
             </div>
           </header>
-          
+
           <div className="flex justify-center pb-12">
             <div className="flex space-x-8">
               {['Personalized Itineraries', 'AI-Powered Recommendations', 'Local Experiences'].map((feature, index) => (
@@ -104,13 +120,13 @@ export default function LandingPage() {
           {[
             { title: "Share Your Preferences", content: "Let us know your travel style, interests, and must-see places to tailor recommendations." },
             { title: "Get Personalized Suggestions", content: "Receive curated picks for activities, stays, and local experiences that match your profile." },
-            { title: "Enjoy Stress-Free Planning", content: "Save time and focus on the fun with our AI-powered trip planning and easy-to-follow itinerary." }
+            { title: "Enjoy Stress-Free Planning", content: "Save time and enjoy the fun with our easy itinerary and AI-powered trip planning." }
           ].map((step, index) => (
             <Card key={index} className="bg-white shadow-lg hover:shadow-xl transition-shadow duration-300 border-t-4 border-[#ffb001]">
               <CardHeader>
                 <CardTitle className="text-xl font-semibold text-[#019992]">Step {index + 1}: {step.title}</CardTitle>
               </CardHeader>
-              <CardContent className="text-gray-600">
+              <CardContent className="text-gray-700">
                 {step.content}
               </CardContent>
             </Card>
@@ -142,17 +158,29 @@ export default function LandingPage() {
           }
         ].map((item, index) => (
           <div key={index} className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} items-center justify-center gap-12 mt-8`}>
-            <div className="text-left space-y-6 max-w-md">
-              <h4 className="text-2xl font-semibold text-[#019992]">{item.title}</h4>
-              <p className="text-gray-600">
+            <div className="text-left space-y-8 max-w-md">
+              <h4 className="text-2xl font-bold text-[#019992]">{item.title}</h4>
+              <p className="text-gray-600 font-semibold">
                 {item.content}
               </p>
-              <Link href="/sign-in">
-                <Button className="bg-[#ffb001] text-white hover:bg-[#fb475e]">Get Started</Button>
-              </Link>
+              <div>
+              {session ? (
+                            <Link href="/generator">
+                                <Button className="bg-[#ffb001] text-white hover:bg-[#fb475e] rounded-full py-6 px-8 text-lg font-semibold transition-all duration-300">
+                                    Get Started
+                                </Button>
+                            </Link>
+                        ) : (
+                            <Link href="/sign-in">
+                                <Button className="bg-[#ffb001] text-white hover:bg-[#fb475e] rounded-full py-6 px-8 text-lg font-semibold transition-all duration-300">
+                                    Get Started
+                                </Button>
+                            </Link>
+                        )}
+              </div>
             </div>
             <div className='py-12'>
-              <Image src={item.image} alt={item.title} width={450} height={400} className="rounded-lg shadow-lg" />
+              <Image src={item.image} alt={item.title} width={450} height={400} className="rounded-lg" />
             </div>
           </div>
         ))}
@@ -161,7 +189,7 @@ export default function LandingPage() {
       {/* Why Choose Us Section */}
       <section className="py-16 mb-12 px-6 text-center bg-[#44ee77] bg-opacity-10">
         <h3 className="text-2xl md:text-4xl font-bold mb-6 text-[#019992]">Why choose Tripsy?</h3>
-        <p className="text-lg max-w-2xl mx-auto mb-12 text-gray-600">
+        <p className="text-lg max-w-2xl mx-auto mb-12 text-gray-600 font-semibold">
           At Tripsy, we redefine travel planning with cutting-edge AI, user-centric design, and personalized recommendations, making every journey a seamless adventure.
         </p>
 
@@ -201,7 +229,7 @@ export default function LandingPage() {
                 {feature.icon}
               </div>
               <h4 className="text-xl font-semibold text-[#019992]">{feature.title}</h4>
-              <p className="text-gray-600">
+              <p className="text-gray-600 font-semibold">
                 {feature.description}
               </p>
             </div>
@@ -212,16 +240,16 @@ export default function LandingPage() {
       {/* Newsletter Section */}
       <section className="py-16 px-6 text-center space-y-8 bg-[#019992] text-white rounded-lg mx-6">
         <h3 className="text-4xl font-bold">Stay Inspired</h3>
-        <p className="text-xl">
+        <p className="text-xl font-semibold">
           Subscribe to our newsletter for the latest updates and travel insights.
         </p>
         <div className="flex items-center justify-center mt-4">
           <Input
             type="email"
             placeholder="Enter your email"
-            className="max-w-md text-[#019992] placeholder:text-[#019992] bg-white"
+            className="max-w-md text-[#019992] placeholder:text-[#019992] bg-white placeholder:font-semibold"
           />
-          <Button className="ml-2 bg-[#ffb001] text-white hover:bg-[#fb475e]">
+          <Button className="ml-2 bg-[#ffb001] text-white hover:bg-[#fb475e] font-semibold">
             Subscribe
           </Button>
         </div>
@@ -232,13 +260,13 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0 px-6">
           <div className="text-2xl font-bold">TRIPSY</div>
           <div className="flex space-x-6">
-            <Link href="/privacy-policy" className="hover:text-[#ffb001]">
+            <Link href="/privacy-policy" className="hover:text-[#ffb001] font-semibold">
               Privacy Policy
             </Link>
-            <Link href="/terms-of-service" className="hover:text-[#ffb001]">
+            <Link href="/terms-of-service" className="hover:text-[#ffb001] font-semibold">
               Terms of Service
             </Link>
-            <Link href="/contact-us" className="hover:text-[#ffb001]">
+            <Link href="/contact-us" className="hover:text-[#ffb001] font-semibold">
               Contact Us
             </Link>
           </div>

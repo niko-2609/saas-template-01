@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { setDashboardStats } from '@/features/store/slices/dashboardSlice';
+import { fetchDashboardStats } from '@/features/store/slices/dashboardSlice';
 
 export const itineraryApi = createApi({
   reducerPath: 'itineraryApi',
@@ -12,7 +13,7 @@ export const itineraryApi = createApi({
       async onQueryStarted(_, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setDashboardStats(data));
+          dispatch(fetchDashboardStats(data));
         } catch (err) {
           // Error handling will be done by the component using the query
         }
