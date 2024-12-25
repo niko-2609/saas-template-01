@@ -21,6 +21,10 @@ model User {
   emailVerified DateTime? // Corresponds to TIMESTAMPTZ
   image         String?  // Corresponds to TEXT
   role          AuthRole @default(USER) // Enum with default 'USER'
+  phone         String?
+  country       String?
+  language      String?
+  timezone      String?
   accounts      Account[] // One-to-many relationship with Account model
   payments      Payment[] // One-to-many relationship with Payment model
   createdAt     DateTime   @default(now())
