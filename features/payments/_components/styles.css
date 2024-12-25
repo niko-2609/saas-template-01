@@ -3,6 +3,8 @@
     z-index: 40;
     box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
     transition: transform 0.3s ease-in-out;
+    border-color: #019992 
+    shadow-lg
 }
 
 .card-unselected {

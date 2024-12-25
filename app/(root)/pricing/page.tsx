@@ -66,17 +66,19 @@ export default function Pricing() {
 
   const proceedWithSubscription = async (userId: string | undefined, planId: string) => {
     if (!userId) return;
-
+    console.log("Proceeding with Subscription....")
     try {
+      console.log("Initiating Subscription....")
       const result = await dispatch(initiateSubscription({ userId, planId })).unwrap();
-      
+      console.log("Subscription Result", result?.subscriptionId)
       // Only proceed with Razorpay if we have a valid subscription ID
       if (result?.subscriptionId) {
         const options = {
           key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          subscription_id: result.subscriptionId,
+          subscription_id: result?.subscriptionId,
           description: "Monthly Plan Subscription",
           handler: async (response: PaymentResponse) => {
+            console.log("RESPONSE", response)
             try {
               await dispatch(verifyPayment({
                 userId,
@@ -93,21 +95,17 @@ export default function Pricing() {
               // Stay on page and show error
             }
           },
-          modal: {
-            ondismiss: () => {
-              dispatch(resetPaymentState());
-            }
-          },
-          prefill: {
-            name: session?.user?.name ?? "",
-            email: session?.user?.email ?? "",
+          prefill: { // prefill is recommended, it auto-fills customer contact information, specially thier phone number.
+            name: "John Doe",
+            email: "johndoe@example.com",
+            contact: "9119758507", // Provide customer's phone number for better conversion rates
           },
           theme: {
             color: "#3399cc",
           },
         };
 
-        const rzp1 = new (window as any).Razorpay(options);
+        const rzp1 = new window.Razorpay(options);
         rzp1.open();
       }
     } catch (error: any) {

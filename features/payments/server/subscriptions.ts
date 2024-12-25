@@ -46,13 +46,16 @@ export const activateSubscription = async (userId: any, planId: any) => {
             })
         }
 
-        const newSubscription = await fetch(`https://api.razorpay.com/v1/subscriptions/`, options);
+        const newSubscription = await fetch('https://api.razorpay.com/v1/subscriptions', options);
         const data = await newSubscription.json();
+
+        console.log("DATA", data)
         
         if (data?.error) {
             return { error: data.error.description || 'Razorpay error occurred' };
         }
 
+        console.log("DATA", data)
         return data;
     } catch (error) {
         return { error: error instanceof Error ? error.message : 'Unknown error occurred' };

@@ -21,7 +21,9 @@ export const initiateSubscription = createAsyncThunk(
   'payment/initiateSubscription',
   async ({ userId, planId }: { userId: string; planId: string }, { rejectWithValue }) => {
     try {
+      console.log("Activating Subscription....")
       const response = await activateSubscription(userId, planId);
+      console.log("ActivateSubscription Response", response)
       if (response?.error) {
         return rejectWithValue(response.error);
       }
