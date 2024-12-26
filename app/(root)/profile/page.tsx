@@ -29,12 +29,12 @@ export default function UserProfile() {
   const form = useForm({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      username: "",
+      username: profile?.username || "",
       email: session?.user?.email || "",
-      phone: "",
-      country: "",
-      language: "",
-      timezone: "",
+      phone: profile?.phone || "",
+      country: profile?.country || "",
+      language: profile?.language || "",
+      timezone: profile?.timezone || "",
     }
   })
 
