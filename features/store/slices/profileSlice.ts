@@ -1,4 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { getProfile, updateProfile, ProfileFormData } from '@/features/profile/server/actions';
 
 interface ProfileState {
   username?: string;
@@ -18,20 +19,22 @@ const initialState: ProfileState = {
 export const fetchProfile = createAsyncThunk(
   'profile/fetchProfile',
   async (userId: string) => {
-    const response = await fetch(`/api/profile/${userId}`);
-    return response.json();
+    const response = await getProfile(userId);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    return response.user;
   }
 );
 
 export const updateProfileData = createAsyncThunk(
   'profile/updateProfile',
-  async ({ userId, data }: { userId: string; data: Partial<ProfileState> }) => {
-    const response = await fetch(`/api/profile/${userId}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
-    });
-    return response.json();
+  async ({ userId, data }: { userId: string; data: ProfileFormData }) => {
+    const response = await updateProfile(userId, data);
+    if (response.error) {
+      throw new Error(response.error);
+    }
+    return response.user;
   }
 );
 
@@ -48,10 +51,20 @@ const profileSlice = createSlice({
       })
       .addCase(fetchProfile.fulfilled, (state, action) => {
         state.isLoading = false;
-        return { ...state, ...action.payload };
+        state.username = action.payload?.username || undefined;
+        state.phone = action.payload?.phone || undefined;
+        state.country = action.payload?.country || undefined;
+        state.language = action.payload?.language || undefined;
+        state.timezone = action.payload?.timezone || undefined;
+        state.error = null;
       })
       .addCase(updateProfileData.fulfilled, (state, action) => {
-        return { ...state, ...action.payload };
+        state.username = action.payload?.username || undefined;
+        state.phone = action.payload?.phone || undefined;
+        state.country = action.payload?.country || undefined;
+        state.language = action.payload?.language || undefined;
+        state.timezone = action.payload?.timezone || undefined;
+        state.error = null;
       });
   },
 }); 
