@@ -21,6 +21,7 @@ model User {
   emailVerified DateTime? // Corresponds to TIMESTAMPTZ
   image         String?  // Corresponds to TEXT
   role          AuthRole @default(USER) // Enum with default 'USER'
+  username      String?  @unique
   phone         String?
   country       String?
   language      String?

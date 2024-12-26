@@ -2,28 +2,21 @@
 
 import { db } from "@/features/db/db"
 import { z } from "zod"
+import { profileFormSchema } from "../schemas"
 
-const profileSchema = z.object({
-  name: z.string().min(2).max(100),
-  email: z.string().email(),
-  phone: z.string().optional(),
-  country: z.string().optional(),
-  language: z.string().optional(),
-  timezone: z.string().optional(),
-})
 
-export type ProfileFormData = z.infer<typeof profileSchema>
+export type ProfileFormData = z.infer<typeof profileFormSchema>
 
 export async function updateProfile(userId: string, data: ProfileFormData) {
   try {
     // Validate the input data
-    const validated = profileSchema.parse(data)
+    const validated = profileFormSchema.parse(data)
 
     // Check if username is taken (if being updated)
-    if (validated.username) {
+    if (validated?.username) {
       const existing = await db.user.findFirst({
         where: {
-          username: validated.username,
+          username: validated?.username,
           NOT: {
             id: userId
           }

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import { useState, useEffect } from "react"
@@ -27,8 +29,8 @@ export default function UserProfile() {
   const form = useForm({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      name: "",
-      email: "",
+      username: "",
+      email: session?.user?.email || "",
       phone: "",
       country: "",
       language: "",
@@ -51,7 +53,7 @@ export default function UserProfile() {
 
   const onSubmit = async (data: any) => {
     if (!session?.user?.id) return
-
+    console.log(data)
     setIsLoading(true)
     try {
       await dispatch(updateProfileData({ 
@@ -92,10 +94,10 @@ export default function UserProfile() {
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>Username</FormLabel>
                       <FormControl>
                         <Input {...field} />
                       </FormControl>
