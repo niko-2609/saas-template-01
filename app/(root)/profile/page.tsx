@@ -19,22 +19,26 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Spinner } from "@/components/ui/spinner"
 import { profileFormSchema } from "@/features/profile/schemas"
 import { countries, languages, timezones } from "@/features/profile/data"
+import { ImageUpload } from "@/components/shared/ImageUpload"
+import { toast } from "sonner"
+import { getImageUploadUrl, updateProfileImage } from "@/features/profile/server/actions"
 
 export default function UserProfile() {
   const { data: session } = useSession()
   const dispatch = useAppDispatch()
   const [isLoading, setIsLoading] = useState(false)
   const profile = useAppSelector((state) => state.profile)
+  const [s3Url, setS3Url] = useState<string | null>(null)
 
   const form = useForm({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
-      username: profile?.username || "",
+      username: "",
       email: session?.user?.email || "",
-      phone: profile?.phone || "",
-      country: profile?.country || "",
-      language: profile?.language || "",
-      timezone: profile?.timezone || "",
+      phone: "",
+      country: "",
+      language: "",
+      timezone: "",
     }
   })
 
@@ -46,14 +50,17 @@ export default function UserProfile() {
 
   // Update form when profile data is loaded
   useEffect(() => {
-    if (profile) {
-      form.reset(profile)
+    const formData = {
+      ...profile,
+      email: session?.user?.email || ""
     }
-  }, [profile, form])
+    form.reset(formData)
+  }, [profile, session?.user?.email, form])
 
   const onSubmit = async (data: any) => {
     if (!session?.user?.id) return
     console.log(data)
+    data.image = s3Url
     setIsLoading(true)
     try {
       await dispatch(updateProfileData({ 
@@ -67,6 +74,17 @@ export default function UserProfile() {
       // TODO Add error toast message
     } finally {
       setIsLoading(false)
+    }
+  }
+
+
+  const getUploadUrl = async (fileType: string) => {
+    if (!session?.user?.id) throw new Error('Not authenticated')
+    try {
+      const result = await getImageUploadUrl(session.user.id, fileType)
+      setS3Url(result?.url)
+    } catch (error) {
+      throw error
     }
   }
 
@@ -88,7 +106,10 @@ export default function UserProfile() {
                   <AvatarImage src={session?.user?.image || ""} />
                   <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
-                <Button type="button" variant="outline">Change Photo</Button>
+                <ImageUpload
+                  onUploadError={(error) => toast.error(error)}
+                  getUploadUrl={getUploadUrl}
+                />
               </div>
 
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
