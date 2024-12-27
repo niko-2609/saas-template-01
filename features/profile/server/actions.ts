@@ -4,7 +4,17 @@
 import { db } from "@/features/db/db"
 import { z } from "zod"
 import { profileFormSchema } from "../schemas"
+import { createPresignedPost } from "@aws-sdk/s3-presigned-post"
+import { S3Client } from "@aws-sdk/client-s3"
 
+
+const s3 = new S3Client({
+  region: process.env.AWS_REGION!,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>
 
@@ -86,3 +96,38 @@ export async function updateProfile(userId: string, data: ProfileFormData) {
     return { error: "Failed to update profile" }
   }
 } 
+
+// export async function updateProfileImage(userId: string, imageUrl: string) {
+//   try {
+//     const updated = await db.user.update({
+//       where: { id: userId },
+//       data: { image: imageUrl },
+//       select: { image: true }
+//     });
+//     return { success: true, image: updated.image };
+//   } catch (error) {
+//     console.error("Error updating profile image:", error);
+//     return { error: "Failed to update profile image" };
+//   }
+// }
+
+export async function getImageUploadUrl(userId: string, fileType: string): Promise<{ url: string; fields: Record<string, string>; key: string }> {
+  const key = `profile-images/${userId}-${Date.now()}.${fileType}`;
+  
+  try {
+    const { url, fields } = await createPresignedPost(s3, {
+      Bucket: process.env.AWS_BUCKET_NAME!,
+      Key: key,
+      Conditions: [
+        ["content-length-range", 0, 10485760], // up to 10MB
+        ["starts-with", "$Content-Type", "image/"],
+      ],
+      Expires: 600, // 10 minutes
+    });
+
+    return { url, fields, key };
+  } catch (error) {
+    console.error("Error generating upload URL:", error);
+    throw new Error('Failed to generate upload URL');
+  }
+}
