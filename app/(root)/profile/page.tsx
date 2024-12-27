@@ -28,7 +28,7 @@ export default function UserProfile() {
   const dispatch = useAppDispatch()
   const [isLoading, setIsLoading] = useState(false)
   const profile = useAppSelector((state) => state.profile)
-  const [s3Url, setS3Url] = useState<string | null>(null)
+  const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
   const form = useForm({
     resolver: zodResolver(profileFormSchema),
@@ -59,34 +59,48 @@ export default function UserProfile() {
 
   const onSubmit = async (data: any) => {
     if (!session?.user?.id) return
-    console.log(data)
-    data.image = s3Url
     setIsLoading(true)
+    
     try {
+      // Upload image to S3 if a new file was selected
+      if (selectedFile) {
+        const { url, fields, key } = await getImageUploadUrl(session.user.id, selectedFile.type)
+        
+        // Prepare form data for upload
+        const formData = new FormData()
+        Object.entries(fields).forEach(([key, value]) => {
+          formData.append(key, value)
+        })
+        formData.append('file', selectedFile)
+
+        // Upload to S3
+        const uploadResponse = await fetch(url, {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!uploadResponse.ok) throw new Error('Upload failed')
+
+        // Get the final image URL
+        const imageUrl = `${process.env.NEXT_PUBLIC_CDN_URL}/${key}`
+        data.image = imageUrl
+      }
+
+      // Update profile with all data including new image URL if uploaded
       await dispatch(updateProfileData({ 
         userId: session.user.id, 
         data 
       })).unwrap()
       
-      // TODO: Add toast message
+      toast.success('Profile updated successfully')
+      setSelectedFile(null) // Clear selected file after successful update
     } catch (error: any) {
-      // toast.error("Failed to update profile")
-      // TODO Add error toast message
+      toast.error(error.message || 'Failed to update profile')
     } finally {
       setIsLoading(false)
     }
   }
 
-
-  const getUploadUrl = async (fileType: string) => {
-    if (!session?.user?.id) throw new Error('Not authenticated')
-    try {
-      const result = await getImageUploadUrl(session.user.id, fileType)
-      setS3Url(result?.url)
-    } catch (error) {
-      throw error
-    }
-  }
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -108,7 +122,8 @@ export default function UserProfile() {
                 </Avatar>
                 <ImageUpload
                   onUploadError={(error) => toast.error(error)}
-                  getUploadUrl={getUploadUrl}
+                  onFileSelect={setSelectedFile}
+                  selectedFile={selectedFile}
                 />
               </div>
 

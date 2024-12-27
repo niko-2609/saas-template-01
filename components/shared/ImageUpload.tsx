@@ -1,16 +1,17 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Spinner } from "@/components/ui/spinner"
+import Image from "next/image"
 
 interface ImageUploadProps {
   onUploadError: (error: string) => void
-  getUploadUrl: (fileType: string) => Promise<{ url: string; fields: Record<string, string>; key: string }>
+  onFileSelect: (file: File) => void
+  selectedFile: File | null
 }
 
-export function ImageUpload({ onUploadError, getUploadUrl }: ImageUploadProps) {
-  const [isUploading, setIsUploading] = useState(false)
+export function ImageUpload({ onUploadError, onFileSelect, selectedFile }: ImageUploadProps) {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,40 +30,28 @@ export function ImageUpload({ onUploadError, getUploadUrl }: ImageUploadProps) {
       return
     }
 
-    setIsUploading(true)
-    try {
-      // Get presigned URL
-      const { url, fields, key } = await getUploadUrl(file.type)
-      if (!url || !fields) throw new Error('Failed to get upload URL')
-
-      // Prepare form data for upload
-      const formData = new FormData()
-      Object.entries(fields).forEach(([key, value]) => {
-        formData.append(key, value)
-      })
-      formData.append('file', file)
-
-      // Upload to S3
-      const uploadResponse = await fetch(url, {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (!uploadResponse.ok) throw new Error('Upload failed')
-
-      // Get the final image URL
-      const imageUrl = `${process.env.NEXT_PUBLIC_CDN_URL}/${key}`
-      return imageUrl
-    } catch (error) {
-      console.error('Upload error:', error)
-      onUploadError('Failed to upload image')
-    } finally {
-      setIsUploading(false)
-    }
+    // Create preview URL
+    const preview = URL.createObjectURL(file)
+    setPreviewUrl(preview)
+    onFileSelect(file)
   }
 
+  // Cleanup preview URL when component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl)
+      }
+    }
+  }, [previewUrl])
+
   return (
-    <>
+    <div className="flex flex-col items-center gap-4">
+      {previewUrl && (
+        <div className="relative w-20 h-20 rounded-full overflow-hidden">
+          <Image src={previewUrl} alt="Preview" className="w-full h-full object-cover" height={80} width={80}/>
+        </div>
+      )}
       <input
         type="file"
         ref={fileInputRef}
@@ -74,11 +63,9 @@ export function ImageUpload({ onUploadError, getUploadUrl }: ImageUploadProps) {
         type="button"
         variant="outline"
         onClick={() => fileInputRef.current?.click()}
-        disabled={isUploading}
       >
-        {isUploading ? <Spinner className="mr-2" size="sm" /> : null}
-        {isUploading ? 'Uploading...' : 'Change Photo'}
+        {selectedFile ? 'Change Photo' : 'Select Photo'}
       </Button>
-    </>
+    </div>
   )
 } 
