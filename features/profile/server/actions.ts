@@ -14,6 +14,7 @@ const s3 = new S3Client({
     accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
   },
+  forcePathStyle: true
 });
 
 export type ProfileFormData = z.infer<typeof profileFormSchema>
@@ -112,7 +113,8 @@ export async function updateProfile(userId: string, data: ProfileFormData) {
 // }
 
 export async function getImageUploadUrl(userId: string, fileType: string): Promise<{ url: string; fields: Record<string, string>; key: string }> {
-  const key = `profile-images/${userId}-${Date.now()}.${fileType}`;
+  const fileExtension = fileType.split('/')[1] || 'png';
+  const key = `profile-images/${userId}-${Date.now()}.${fileExtension}`;
   
   try {
     const { url, fields } = await createPresignedPost(s3, {
@@ -123,9 +125,23 @@ export async function getImageUploadUrl(userId: string, fileType: string): Promi
         ["starts-with", "$Content-Type", "image/"],
       ],
       Expires: 600, // 10 minutes
+      Fields: {
+        'Content-Type': fileType,
+        'success_action_status': '201'
+      }
     });
 
-    return { url, fields, key };
+    console.log('Generated URL:', url); // For debugging
+    console.log('Generated Fields:', fields); // For debugging
+
+    return { 
+      url: url,
+      fields: {
+        ...fields,
+        'Content-Type': fileType,
+      },
+      key 
+    };
   } catch (error) {
     console.error("Error generating upload URL:", error);
     throw new Error('Failed to generate upload URL');
