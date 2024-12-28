@@ -3,18 +3,32 @@
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
+import { X } from "lucide-react"
 
 interface ImageUploadProps {
   onUploadError: (error: string) => void
-  onFileSelect: (file: File) => void
+  onFileSelect: (file: File | null) => void
   selectedFile: File | null
+  currentImageUrl?: string
 }
 
-export function ImageUpload({ onUploadError, onFileSelect, selectedFile }: ImageUploadProps) {
+export function ImageUpload({ 
+  onUploadError, 
+  onFileSelect, 
+  selectedFile,
+  currentImageUrl 
+}: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Reset preview when selectedFile changes
+  useEffect(() => {
+    if (!selectedFile) {
+      setPreviewUrl(null)
+    }
+  }, [selectedFile])
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
@@ -36,7 +50,18 @@ export function ImageUpload({ onUploadError, onFileSelect, selectedFile }: Image
     onFileSelect(file)
   }
 
-  // Cleanup preview URL when component unmounts
+  const handleClearSelection = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl)
+    }
+    setPreviewUrl(null)
+    onFileSelect(null)
+  }
+
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
       if (previewUrl) {
@@ -46,12 +71,27 @@ export function ImageUpload({ onUploadError, onFileSelect, selectedFile }: Image
   }, [previewUrl])
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {previewUrl && (
+    <div className="flex flex-col items-center">
+      <div className="relative w-20 h-20 mb-2">
         <div className="relative w-20 h-20 rounded-full overflow-hidden">
-          <Image src={previewUrl} alt="Preview" className="w-full h-full object-cover" height={80} width={80}/>
+          <Image 
+            src={previewUrl || currentImageUrl || ''} 
+            alt="Profile" 
+            fill
+            className="object-cover"
+            priority
+          />
         </div>
-      )}
+        {selectedFile && (
+          <button
+            onClick={handleClearSelection}
+            className="absolute -top-1 -right-1 bg-red-500 rounded-full p-1 hover:bg-red-600 transition-colors"
+            type="button"
+          >
+            <X className="h-4 w-4 text-white" />
+          </button>
+        )}
+      </div>
       <input
         type="file"
         ref={fileInputRef}
@@ -63,6 +103,7 @@ export function ImageUpload({ onUploadError, onFileSelect, selectedFile }: Image
         type="button"
         variant="outline"
         onClick={() => fileInputRef.current?.click()}
+        className="mt-2"
       >
         {selectedFile ? 'Change Photo' : 'Select Photo'}
       </Button>
