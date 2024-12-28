@@ -3,10 +3,12 @@ import { getProfile, updateProfile, ProfileFormData } from '@/features/profile/s
 
 interface ProfileState {
   username?: string;
+  email?: string;
   phone?: string;
   country?: string;
   language?: string;
   timezone?: string;
+  image?: string;
   isLoading: boolean;
   error: string | null;
 }

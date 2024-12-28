@@ -8,6 +8,7 @@ import { useAppDispatch, useAppSelector } from "@/features/store/hooks"
 import { fetchProfile, updateProfileData } from "@/features/store/slices/profileSlice"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
+import { z } from "zod"
 
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -15,7 +16,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Spinner } from "@/components/ui/spinner"
 import { profileFormSchema } from "@/features/profile/schemas"
 import { countries, languages, timezones } from "@/features/profile/data"
@@ -24,12 +24,16 @@ import { toast } from "sonner"
 import { getImageUploadUrl } from "@/features/profile/server/actions"
 
 
+// Add type for form values
+type FormValues = z.infer<typeof profileFormSchema>
+
 export default function UserProfile() {
   const { data: session, update: updateSession } = useSession()
   const dispatch = useAppDispatch()
   const [isLoading, setIsLoading] = useState(false)
   const profile = useAppSelector((state) => state.profile)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
+  const [isFormDirty, setIsFormDirty] = useState(false)
 
   const form = useForm({
     resolver: zodResolver(profileFormSchema),
@@ -43,6 +47,29 @@ export default function UserProfile() {
       image: "",
     }
   })
+
+  // Watch for form changes
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      // Get current form values
+      const currentValues = form.getValues()
+      
+      // Check for changes in form fields
+      const hasFormChanges = Object.keys(currentValues).some(key => {
+        if (key === 'email') return false // Ignore email field
+        if (key === 'image') return false // Ignore image field as we handle it separately
+        return currentValues[key as keyof FormValues] !== profile[key as keyof FormValues]
+      })
+
+      // Form is dirty if either form values changed OR a new file is selected
+      setIsFormDirty(hasFormChanges || !!selectedFile)
+    })
+
+    // Also update form dirty state when selectedFile changes
+    setIsFormDirty(!!selectedFile)
+
+    return () => subscription.unsubscribe()
+  }, [form, profile, selectedFile])
 
   useEffect(() => {
     if (session?.user?.id) {
@@ -64,7 +91,9 @@ export default function UserProfile() {
     setIsLoading(true)
     
     try {
-      // Upload image to S3 if a new file was selected
+      const updatedData = { ...data }
+
+      // Only handle image upload if a new file is selected
       if (selectedFile) {
         try {
           const { url, fields, key } = await getImageUploadUrl(session.user.id, selectedFile.type);
@@ -77,44 +106,44 @@ export default function UserProfile() {
           // Add file last
           formData.append('file', selectedFile);
 
-          console.log('Upload URL:', url); // For debugging
-          console.log('Upload Fields:', Object.fromEntries(formData)); // For debugging
-
           const uploadResponse = await fetch(url, {
             method: 'POST',
             body: formData,
           });
 
           if (!uploadResponse.ok) {
-            console.error('Upload Response:', await uploadResponse.text());
             throw new Error('Upload failed');
           }
 
           const imageUrl = `${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
-          data.image = imageUrl.trim();
+          updatedData.image = imageUrl.trim();
         } catch (error) {
           console.error('Upload error:', error);
           throw new Error('Failed to upload image');
         }
+      } else {
+        // Keep existing image if no new file is selected
+        updatedData.image = session.user.image || ""
       }
 
-      console.log('Data:', data);
-      // Update profile with all data including new image URL if uploaded
+      // Update profile with all data
       await dispatch(updateProfileData({ 
         userId: session.user.id, 
-        data 
+        data: updatedData 
       })).unwrap()
 
-      // Update session with new image
-      await updateSession({
-        user: {
-          ...session.user,
-          image: data.image
-        }
-      })
+      // Update session only if image was changed
+      if (selectedFile) {
+        await updateSession({
+          user: {
+            ...session.user,
+            image: updatedData.image
+          }
+        })
+      }
       
       toast.success('Profile updated successfully')
-      setSelectedFile(null) // Clear selected file after successful update
+      setSelectedFile(null)
     } catch (error: any) {
       toast.error(error.message || 'Failed to update profile')
     } finally {
@@ -136,15 +165,12 @@ export default function UserProfile() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Avatar section */}
-              <div className="flex items-center space-x-4 mb-6">
-                <Avatar className="w-20 h-20">
-                  <AvatarImage src={session?.user?.image || ""} />
-                  <AvatarFallback>{session?.user?.name?.charAt(0)}</AvatarFallback>
-                </Avatar>
+              <div className="flex flex-col items-center mb-6">
                 <ImageUpload
                   onUploadError={(error) => toast.error(error)}
                   onFileSelect={setSelectedFile}
                   selectedFile={selectedFile}
+                  currentImageUrl={session?.user?.image || ""}
                 />
               </div>
 
@@ -270,9 +296,15 @@ export default function UserProfile() {
               <Button 
                 type="submit" 
                 className="w-full bg-[#019992] text-white hover:bg-[#ffb001]"
-                disabled={isLoading}
+                disabled={isLoading || !isFormDirty}
               >
-                {isLoading ? <Spinner size="sm" /> : "Save Changes"}
+                {isLoading ? (
+                  <Spinner size="sm" />
+                ) : isFormDirty ? (
+                  "Save Changes"
+                ) : (
+                  "No Changes to Save"
+                )}
               </Button>
             </form>
           </Form>
