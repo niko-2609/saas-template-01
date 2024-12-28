@@ -21,10 +21,11 @@ import { profileFormSchema } from "@/features/profile/schemas"
 import { countries, languages, timezones } from "@/features/profile/data"
 import { ImageUpload } from "@/components/shared/ImageUpload"
 import { toast } from "sonner"
-import { getImageUploadUrl, updateProfileImage } from "@/features/profile/server/actions"
+import { getImageUploadUrl } from "@/features/profile/server/actions"
+
 
 export default function UserProfile() {
-  const { data: session } = useSession()
+  const { data: session, update: updateSession } = useSession()
   const dispatch = useAppDispatch()
   const [isLoading, setIsLoading] = useState(false)
   const profile = useAppSelector((state) => state.profile)
@@ -39,6 +40,7 @@ export default function UserProfile() {
       country: "",
       language: "",
       timezone: "",
+      image: "",
     }
   })
 
@@ -64,33 +66,52 @@ export default function UserProfile() {
     try {
       // Upload image to S3 if a new file was selected
       if (selectedFile) {
-        const { url, fields, key } = await getImageUploadUrl(session.user.id, selectedFile.type)
-        
-        // Prepare form data for upload
-        const formData = new FormData()
-        Object.entries(fields).forEach(([key, value]) => {
-          formData.append(key, value)
-        })
-        formData.append('file', selectedFile)
+        try {
+          const { url, fields, key } = await getImageUploadUrl(session.user.id, selectedFile.type);
+          
+          const formData = new FormData();
+          // Add all fields first
+          Object.entries(fields).forEach(([key, value]) => {
+            formData.append(key, value);
+          });
+          // Add file last
+          formData.append('file', selectedFile);
 
-        // Upload to S3
-        const uploadResponse = await fetch(url, {
-          method: 'POST',
-          body: formData,
-        })
+          console.log('Upload URL:', url); // For debugging
+          console.log('Upload Fields:', Object.fromEntries(formData)); // For debugging
 
-        if (!uploadResponse.ok) throw new Error('Upload failed')
+          const uploadResponse = await fetch(url, {
+            method: 'POST',
+            body: formData,
+          });
 
-        // Get the final image URL
-        const imageUrl = `${process.env.NEXT_PUBLIC_CDN_URL}/${key}`
-        data.image = imageUrl
+          if (!uploadResponse.ok) {
+            console.error('Upload Response:', await uploadResponse.text());
+            throw new Error('Upload failed');
+          }
+
+          const imageUrl = `${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
+          data.image = imageUrl.trim();
+        } catch (error) {
+          console.error('Upload error:', error);
+          throw new Error('Failed to upload image');
+        }
       }
 
+      console.log('Data:', data);
       // Update profile with all data including new image URL if uploaded
       await dispatch(updateProfileData({ 
         userId: session.user.id, 
         data 
       })).unwrap()
+
+      // Update session with new image
+      await updateSession({
+        user: {
+          ...session.user,
+          image: data.image
+        }
+      })
       
       toast.success('Profile updated successfully')
       setSelectedFile(null) // Clear selected file after successful update

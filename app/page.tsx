@@ -20,6 +20,9 @@ declare global {
     Razorpay: any;
   }
 }
+const staticText = "PLAN YOUR PERFECT JOURNEY";
+const dynamicWords = ["WITH POWER OF AI", "ONE CLICK AWAY"];
+
 
 export default function LandingPage() {
 
@@ -56,8 +59,8 @@ export default function LandingPage() {
 
           <header className="flex flex-col justify-center items-center text-center px-4 py-20 space-y-8">
             <TypewriterEffect
-              staticText="PLAN YOUR PERFECT JOURNEY"
-              dynamicWords={["WITH POWER OF AI", "ONE CLICK AWAY"]}
+              staticText={staticText}
+              dynamicWords={dynamicWords}
               className="text-5xl md:text-6xl font-bold mb-4 text-white"
               cursorClassName="bg-[#ffb001]"
             />
@@ -97,7 +100,7 @@ export default function LandingPage() {
                   <svg className="w-6 h-6 text-[#ffb001]" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
                   </svg>
-                  <span className="text-white font-medium">{feature}</span>
+                  <span className="text-white font-semibold">{feature}</span>
                 </div>
               ))}
             </div>

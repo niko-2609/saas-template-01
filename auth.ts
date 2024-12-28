@@ -12,7 +12,7 @@ const combinedProviders = [
         from: 'noreply@nikojam.com'
     })
 ]
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
     pages: {
         signIn: "/sign-in",
         error: "/error"
@@ -36,22 +36,29 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         }
     },
     callbacks: {
-        async jwt({ token, user }) {
-            if (user) {
+        async jwt({ token, user, trigger, session }) {
+    
+            // Handle session update  scenario
+            if (trigger === "update" && session?.user) {
+                token.picture = session.user.image
+            }
+
+            if (user) { // Only available on sign in
                 return {
                     ...token,
                     id: user.id,
+                    picture: user.image
                 };
             }
             return token
         },
         async session({ session, token }) {
-
-            console.log("Session:", session)
-            console.log("Token:", token)
-
             if (token) {
                 session.user.id = token.id as string
+                session.user.image = token.picture as string
+
+                console.log("SESSION IN SESSION CALLBACK", session)
+                console.log("TOKEN IN SESSION CALLBACK", token)
             }
             return session
         },

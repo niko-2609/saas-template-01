@@ -30,6 +30,8 @@ export const fetchProfile = createAsyncThunk(
 export const updateProfileData = createAsyncThunk(
   'profile/updateProfile',
   async ({ userId, data }: { userId: string; data: ProfileFormData }) => {
+    console.log("INSIDE UPDATE PROFILE DATA")
+    console.log("DATA", data)
     const response = await updateProfile(userId, data);
     if (response.error) {
       throw new Error(response.error);
