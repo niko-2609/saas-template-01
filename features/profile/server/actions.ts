@@ -51,6 +51,8 @@ export async function getProfile(userId: string) {
 }
 
 export async function updateProfile(userId: string, data: ProfileFormData) {
+  console.log("INSIDE UPDATE PROFILE")
+  console.log("DATA", data)
   try {
     // Validate the input data
     const validated = profileFormSchema.parse(data)
@@ -66,7 +68,9 @@ export async function updateProfile(userId: string, data: ProfileFormData) {
       if (existing) {
         return { error: "Username already taken" }
       }
-    }
+    } 
+
+      console.log("VALIDATED DATA", validated)
 
     // Update the user profile
     const updated = await db.user.update({
@@ -80,6 +84,7 @@ export async function updateProfile(userId: string, data: ProfileFormData) {
         language: true,
         timezone: true,
         emailVerified: true,
+        image: true,
       }
     })
 
