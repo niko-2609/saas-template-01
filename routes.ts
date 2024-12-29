@@ -9,7 +9,8 @@ export const publicRoutes: string[] = [
     "/about",
     "/privacy-policy",
     "/terms-of-service",
-    "/contact-us"
+    "/contact-us",
+    "/onboarding",
 ]
 
 

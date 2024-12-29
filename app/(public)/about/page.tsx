@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button'
 import { motion } from 'framer-motion'
 import { Facebook, Twitter, Linkedin } from 'lucide-react'
 import BackToHomeButton from '@/components/shared/backToHomeButton'
+import { useRouter } from 'next/navigation'
 
 export default function AboutUs() {
+  const router = useRouter()
+
   return (
    <>
     <div className="min-h-screen flex flex-col bg-white">
@@ -139,6 +142,7 @@ export default function AboutUs() {
             variant="default" 
             size="lg" 
             className="text-lg px-8 py-6 bg-[#ffb001] hover:bg-[#fb475e] text-white transition-colors duration-300"
+            onClick={() => router.push('/sign-in')}
           >
             Get Started
           </Button>
