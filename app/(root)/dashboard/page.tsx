@@ -35,11 +35,6 @@ export default function DashboardPage() {
     }
   }, [dispatch, session]);
 
-  useEffect(() => {
-    if (session?.user && !session.user.hasCompletedOnboarding) {
-      router.replace('/onboarding');
-    }
-  }, [session, router]);
 
   if (isLoading) {
     return (
