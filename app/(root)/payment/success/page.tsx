@@ -1,12 +1,11 @@
-"use client"
+'use client'
 
 import PaymentStatus from '@/features/payments/_components/paymentSuccess'
-import React from 'react'
 
-function PaymentSucessPage() {
+export default function PaymentSuccessPage() {
   return (
-    <PaymentStatus isSuccess={true} />
+    <div className="">
+      <PaymentStatus isSuccess={true} />
+    </div>
   )
 }
-
-export default PaymentSucessPage
