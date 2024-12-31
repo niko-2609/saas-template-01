@@ -15,6 +15,9 @@ import { useSession } from 'next-auth/react';
 import { Loader2 } from 'lucide-react';
 import { useAppDispatch } from "@/features/store/hooks"
 import { fetchDashboardStats } from "@/features/store/slices/dashboardSlice"
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
+import { protectedAction } from "@/features/itenary-generator/server/rateLimitAction"
 
 
 
@@ -46,6 +49,12 @@ export default function ItineraryDisplayPage() {
     const { data: session} = useSession()
     const userId = session?.user?.id
     const dispatch = useAppDispatch();
+    const [rateLimit, setRateLimit] = useState<{
+        remaining: number;
+        total: number;
+        error?: string;
+    } | null>(null);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     
     if (!userId) {
         throw new Error("No user found")
@@ -186,11 +195,42 @@ export default function ItineraryDisplayPage() {
       }, [messages]);
 
 
+    const handleGenerateItinerary = async () => {
+        if (!userId) return;
+
+        try {
+            setIsLoading(true);
+            const rateLimitCheck = await protectedAction(userId);
+            
+            if (!rateLimitCheck.success) {
+                setRateLimit({
+                    remaining: rateLimitCheck.remaining,
+                    total: rateLimitCheck?.total,
+                    error: rateLimitCheck.error
+                });
+                return;
+            }
+
+            setRateLimit({
+                remaining: rateLimitCheck.remaining,
+                total: rateLimitCheck.total
+            });
+
+            // Call your existing generate response function
+            await generateResponse();
+
+        } catch (error) {
+            setError("Failed to generate itinerary. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="p-6">
             <TripSummary 
                 tripDetails={data}
-                onGenerateItinerary={generateResponse}
+                onGenerateItinerary={handleGenerateItinerary}
                 onEditDetails={() => router.back()}
             />
             {error && <p className="text-red-500 mt-10">{error}</p>}
@@ -244,6 +284,23 @@ export default function ItineraryDisplayPage() {
          </Button>
          </div>
        )}
+
+            {rateLimit?.error && (
+                <Alert variant="destructive" className="mb-4">
+                    <AlertCircle className="h-4 w-4" />
+                    <AlertTitle>Rate Limit Reached</AlertTitle>
+                    <AlertDescription>{rateLimit.error}</AlertDescription>
+                </Alert>
+            )}
+
+            {rateLimit && !rateLimit.error && (
+                <Alert className="mb-4">
+                    <AlertTitle>Usage</AlertTitle>
+                    <AlertDescription>
+                        You have {rateLimit.remaining} out of {rateLimit.total} generations remaining today.
+                    </AlertDescription>
+                </Alert>
+            )}
         </div>
     );
 }

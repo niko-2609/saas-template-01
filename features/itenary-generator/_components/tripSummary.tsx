@@ -6,8 +6,8 @@ import { Calendar, Users, ArrowLeft, Loader2, AlertTriangle, Plane, Train, Car, 
 import { useState } from "react"
 import { TripSummaryProps } from "../schemas"
 import { format } from "date-fns";
-import { saveItinerary } from "../server/itineraryService"
-import { useSession } from "next-auth/react"
+// import { saveItinerary } from "../server/itineraryService"
+// import { useSession } from "next-auth/react"
 
 
 
@@ -45,11 +45,10 @@ export default function TripSummary({
   tripDetails, 
   onGenerateItinerary = () => {}, 
   onEditDetails, 
+  isLoading = false,
 }: TripSummaryProps) {
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isSavingToCloud, setIsSavingToCloud ] = useState(false)
-  const { data: session } = useSession()
-  const userId = session?.user?.id
+
 
   console.log(tripDetails)
 
@@ -138,8 +137,8 @@ export default function TripSummary({
           <ArrowLeft className="w-4 h-4 mr-2" />
           Edit Details
         </Button>
-        <Button onClick={handleGenerateItinerary} disabled={isGenerating}>
-          {isGenerating ? (
+        <Button onClick={handleGenerateItinerary} disabled={isGenerating || isLoading}>
+          {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               Generating Itinerary...
