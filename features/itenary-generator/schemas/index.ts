@@ -41,5 +41,6 @@ export interface TripSummaryProps {
     tripDetails?: TripDetails;
     onGenerateItinerary?: () => void;
     onEditDetails: () => void;
+    isLoading?: boolean;
   }
   
