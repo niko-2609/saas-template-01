@@ -120,7 +120,6 @@ export default function UserProfile() {
           const imageUrl = `${process.env.NEXT_PUBLIC_CDN_URL}/${key}`;
           updatedData.image = imageUrl.trim();
         } catch (error) {
-          console.error('Upload error:', error);
           throw new Error('Failed to upload image');
         }
       } else {
@@ -144,10 +143,11 @@ export default function UserProfile() {
         })
       }
       
-      toast("Profile updated successfully.")
+      toast.success("Profile updated successfully.")
       setSelectedFile(null)
     } catch (error: any) {
-      toast("Failed to update profile.")
+      console.error('Error updating profile:', error);
+      toast.error("Failed to update profile.")
     } finally {
       setIsLoading(false)
     }
