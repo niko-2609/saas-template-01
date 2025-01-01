@@ -146,7 +146,6 @@ export default function UserProfile() {
       toast.success("Profile updated successfully.")
       setSelectedFile(null)
     } catch (error: any) {
-      console.error('Error updating profile:', error);
       toast.error("Failed to update profile.")
     } finally {
       setIsLoading(false)
