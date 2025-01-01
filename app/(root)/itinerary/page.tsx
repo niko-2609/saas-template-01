@@ -15,24 +15,10 @@ import { useSession } from 'next-auth/react';
 import { Loader2, CheckCircle2 } from 'lucide-react';
 import { useAppDispatch } from "@/features/store/hooks"
 import { fetchDashboardStats } from "@/features/store/slices/dashboardSlice"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
 import { protectedAction } from "@/features/itenary-generator/server/rateLimitAction"
 import { toast } from "sonner"
 
 
-const StyledItinerary = ({ content }: { content: string }) => (
-    <div className="itinerary-wrapper">
-        <div 
-            className="prose prose-lg max-w-none
-                       prose-h2:text-blue-600 
-                       prose-h3:text-gray-700
-                       prose-p:text-gray-600
-                       prose-strong:text-gray-800"
-            dangerouslySetInnerHTML={{ __html: content }}
-        />
-    </div>
-);
 
 export default function ItineraryDisplayPage() {
     const messagesRef = useRef<HTMLDivElement>(null);
@@ -41,10 +27,8 @@ export default function ItineraryDisplayPage() {
     const [pending, setPending] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [htmlContent, setHtmlContent] = useState('');
-    const [extraParagraph, setExtraParagraph] = useState('');
     const router = useRouter();
     const [ isSaving, setIsSaving] = useState<boolean | null>(null);
-    const [ isDownloading, setIsDownloading] = useState<boolean | null>(null);
     const [ validatedValues, setValidatedValues] = useState<any>(null);
     const { data: session} = useSession()
     const userId = session?.user?.id
@@ -137,7 +121,6 @@ export default function ItineraryDisplayPage() {
                 toast.error("Itinerary already saved!");
             } else {
                 setError("Nothing to save, please generate an itinerary first.");
-                // toast.error("Nothing to save, please generate an itinerary first.");
             }
         };
 
@@ -152,11 +135,8 @@ export default function ItineraryDisplayPage() {
                 .replace(/^```html\n?/, '') // Remove opening ```html
                 .replace(/```$/, '')        // Remove closing ```
                 .slice(0, htmlEndIndex + 7);
-                
-            const extraText = itinerary.slice(htmlEndIndex + 7).trim();
-            
+
             setHtmlContent(cleanHtml);
-            setExtraParagraph(extraText);
         } else {
             // If no </html> found, still clean the markdown markers
             setHtmlContent(
@@ -233,7 +213,7 @@ export default function ItineraryDisplayPage() {
                 <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
             </div>
 
-            {/* Show buttons and rate limit info only after complete generation */}
+            {/* Save to cloud button */}
             {!pending && htmlContent && (
                 <>
                     <div className="flex justify-evenly mt-8">
@@ -259,19 +239,6 @@ export default function ItineraryDisplayPage() {
                     </div>
                 </>
             )}
-
-            {/* Show rate limit info only after content generation */}
-            {/* {!pending && rateLimit && !rateLimit.error && (
-                            toast(`You have ${rateLimit.remaining} generations remaining today.`)
-                    )}
-                     {!pending && rateLimit?.error && (
-                        // <Alert variant="destructive" className="mt-8 mb-4">
-                        //     <AlertCircle className="h-4 w-4" />
-                        //     <AlertTitle className='text-red-500'>Rate Limit Reached</AlertTitle>
-                        //     <AlertDescription className='text-red-500'>{rateLimit.error}</AlertDescription>
-                        // </Alert>
-                        toast(`Rate Limit Reached: ${rateLimit.error}`)
-                    )} */}
         </div>
     );
 }
