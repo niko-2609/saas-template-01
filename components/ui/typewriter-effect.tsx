@@ -5,13 +5,13 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 export const TypewriterEffect = ({
-  staticText = "Plan your perfect journey,",
+  staticText = "PLAN YOUR PERFECT JOURNEY",
   dynamicWords = ["with power of AI", "one click away"],
   className,
   cursorClassName,
 }: {
-  staticText: string;
-  dynamicWords: string[];
+  staticText?: string;
+  dynamicWords?: string[];
   className?: string;
   cursorClassName?: string;
 }) => {
