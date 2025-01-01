@@ -14,17 +14,23 @@ import contentImage2 from "@/public/assets/travel-14.webp";
 import contentImage3 from "@/public/assets/travel-17.webp";
 import travelBackground2 from "@/public/assets/travel-5.jpeg";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState } from 'react';
 
 declare global {
   interface Window {
     Razorpay: any;
   }
 }
-const staticText = "PLAN YOUR PERFECT JOURNEY";
 const dynamicWords = ["WITH POWER OF AI", "ONE CLICK AWAY"];
 
 
 export default function LandingPage() {
+  // const [staticTextVar, setStaticTextVar] = useState<string>("");
+  const [dynamicTextVar, setDynamicTextVar] = useState<string[]>([]);
+  useEffect(() => {
+    setDynamicTextVar(dynamicWords);
+    console.log("LandingPage mounted");
+  }, []);
 
   const { data: session } = useSession();
   return (
@@ -59,8 +65,7 @@ export default function LandingPage() {
 
           <header className="flex flex-col justify-center items-center text-center px-4 py-20 space-y-8">
             <TypewriterEffect
-              staticText={staticText}
-              dynamicWords={dynamicWords}
+              dynamicWords={dynamicTextVar}
               className="text-5xl md:text-6xl font-bold mb-4 text-white"
               cursorClassName="bg-[#ffb001]"
             />
