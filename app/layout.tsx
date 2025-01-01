@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from './providers'
 import { SessionProvider } from "next-auth/react"
+import { Toaster } from "@/components/ui/sonner"
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -33,6 +34,7 @@ export default function RootLayout({
         <Providers>
           <SessionProvider>
             {children}
+            <Toaster richColors position="bottom-right" />
           </SessionProvider>
         </Providers>
       </body>

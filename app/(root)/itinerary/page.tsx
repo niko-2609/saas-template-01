@@ -12,13 +12,13 @@ import { formSchema } from '@/features/itenary-generator/schemas';
 import TripSummary from '@/features/itenary-generator/_components/tripSummary';
 import { saveItinerary } from "@/features/itenary-generator/server/itineraryService";
 import { useSession } from 'next-auth/react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CheckCircle2 } from 'lucide-react';
 import { useAppDispatch } from "@/features/store/hooks"
 import { fetchDashboardStats } from "@/features/store/slices/dashboardSlice"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { protectedAction } from "@/features/itenary-generator/server/rateLimitAction"
-
+import { toast } from "sonner"
 
 
 const StyledItinerary = ({ content }: { content: string }) => (
@@ -55,6 +55,7 @@ export default function ItineraryDisplayPage() {
         error?: string;
     } | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [isSaved, setIsSaved] = useState(false);
     
     if (!userId) {
         throw new Error("No user found")
@@ -96,68 +97,50 @@ export default function ItineraryDisplayPage() {
         setHtmlContent('')
         setItinerary('')
         setError(null)
+        setPending(true)
 
         startTransition(async () => {
             try {
-                 (async () => {
-                    try {
-    
-                        const validatedValuesFromParams = formSchema.parse(data)
-                        setValidatedValues(validatedValuesFromParams);
-                        const { output } = await streamAIResponse(validatedValuesFromParams);
-                        for await (const delta of readStreamableValue(output)) {
-                            setItinerary(itinerary => `${itinerary}${delta}`);
-                        }
-                    } catch (error) {
-                        console.error('Error during itinerary generation:', error);
-                        setError('Failed to generate itinerary. Please try again.');
-                    } finally {
-                        setPending(false);
-                    }
-                })()
+                const validatedValuesFromParams = formSchema.parse(data)
+                setValidatedValues(validatedValuesFromParams);
+                const { output } = await streamAIResponse(validatedValuesFromParams);
+                for await (const delta of readStreamableValue(output)) {
+                    setItinerary(itinerary => `${itinerary}${delta}`);
+                }
+                setPending(false);
             } catch (error) {
                 console.error('Error during itinerary generation:', error);
                 setError('Failed to generate itinerary. Please try again.');
-            } finally {
                 setPending(false);
             }
         });
-        }   
+    }
 
 
         const saveItineraryToCloud = async () => {
-            if (htmlContent !== '') {
+            if (htmlContent !== '' && !isSaved) {
                 try {
                     setIsSaving(true);
                     const response = await saveItinerary(userId, validatedValues, htmlContent);
                     console.log("RESPONSE FROM DB SAVE", response);
                     dispatch(fetchDashboardStats(userId));
+                    toast.success('Itinerary saved successfully!');
+                    setIsSaved(true);
                 } catch (error) {
                     console.error("Error saving itinerary:", error);
                     setError("Failed to save itinerary");
+                    toast.error("Failed to save itinerary. Please try again.");
                 } finally {
                     setIsSaving(false);
                 }
+            } else if (isSaved) {
+                toast.error("Itinerary already saved!");
             } else {
                 setError("Nothing to save, please generate an itinerary first.");
+                // toast.error("Nothing to save, please generate an itinerary first.");
             }
         };
 
-        const downloadItinerary = async () => {
-            if (htmlContent !== '') {
-                try {
-                    setIsDownloading(true);
-                    await saveItinerary(userId, validatedValues, htmlContent);
-                } catch (error) {
-                    console.error("Error downloading itinerary:", error);
-                    setError("Failed to download itinerary");
-                } finally {
-                    setIsDownloading(false);
-                }
-            } else {
-                setError("Nothing to download, please generate an itinerary first.");
-            }
-        };
       
 
     useEffect(() => {
@@ -194,6 +177,15 @@ export default function ItineraryDisplayPage() {
         }
       }, [messages]);
 
+    useEffect(() => {
+        if (!pending && htmlContent && rateLimit) {
+            if (rateLimit.error) {
+                toast.error(`Rate Limit Reached: ${rateLimit.error}`);
+            } else {
+                toast.success(`You have ${rateLimit.remaining} generations remaining today.`);
+            }
+        }
+    }, [pending, htmlContent, rateLimit]);
 
     const handleGenerateItinerary = async () => {
         if (!userId) return;
@@ -218,7 +210,7 @@ export default function ItineraryDisplayPage() {
 
             // Call your existing generate response function
             await generateResponse();
-
+            
         } catch (error) {
             setError("Failed to generate itinerary. Please try again.");
         } finally {
@@ -232,75 +224,54 @@ export default function ItineraryDisplayPage() {
                 tripDetails={data}
                 onGenerateItinerary={handleGenerateItinerary}
                 onEditDetails={() => router.back()}
+                isLoading={isLoading}
             />
             {error && <p className="text-red-500 mt-10">{error}</p>}
-             {/* Itinerary Content Section */}
-         {!pending && !error && (
+            
+            {/* Show content while streaming */}
             <div className="border p-4 rounded-md bg-gray-50 mt-10">
                 <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
             </div>
-        )}
-        <style jsx global>{`
-            /* Custom CSS for generated content */
-            .itinerary-container h2 {
-                color: #2563eb;
-                margin-bottom: 1.5rem;
-            }
-            .day-container {
-                border-left: 4px solid #e5e7eb;
-                padding-left: 1rem;
-                margin-bottom: 2rem;
-            }
-            .activity-time {
-                color: #4b5563;
-                font-weight: 600;
-            }
-        `}</style>
 
-       {htmlContent !== '' && (
-         <div className="flex justify-evenly mt-8">
-         <Button 
-            onClick={() => void saveItineraryToCloud()} 
-            disabled={isSaving || !htmlContent}
-         >
-            {isSaving ? (
+            {/* Show buttons and rate limit info only after complete generation */}
+            {!pending && htmlContent && (
                 <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Saving Itinerary...
+                    <div className="flex justify-evenly mt-8">
+                        <Button 
+                            onClick={() => void saveItineraryToCloud()} 
+                            disabled={isSaving || !htmlContent || isSaved}
+                            className="flex items-center space-x-2"
+                        >
+                            {isSaving ? (
+                                <>
+                                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                    Saving Itinerary...
+                                </>
+                            ) : isSaved ? (
+                                <>
+                                    <CheckCircle2 className="w-4 h-4 mr-2 text-green-500" />
+                                    Saved
+                                </>
+                            ) : (
+                                'Save Itinerary'
+                            )}
+                        </Button>
+                    </div>
                 </>
-            ) : (
-                'Save Itinerary'
-            )}
-         </Button>
-         <Button onClick={downloadItinerary} disabled={!!isDownloading}>
-           {isDownloading ? (
-             <>
-               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-               Downloading Itinerary...
-             </>
-           ) : (
-             'Download as pdf'
-           )}
-         </Button>
-         </div>
-       )}
-
-            {rateLimit?.error && (
-                <Alert variant="destructive" className="mb-4">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertTitle>Rate Limit Reached</AlertTitle>
-                    <AlertDescription>{rateLimit.error}</AlertDescription>
-                </Alert>
             )}
 
-            {rateLimit && !rateLimit.error && (
-                <Alert className="mb-4">
-                    <AlertTitle>Usage</AlertTitle>
-                    <AlertDescription>
-                        You have {rateLimit.remaining} out of {rateLimit.total} generations remaining today.
-                    </AlertDescription>
-                </Alert>
-            )}
+            {/* Show rate limit info only after content generation */}
+            {/* {!pending && rateLimit && !rateLimit.error && (
+                            toast(`You have ${rateLimit.remaining} generations remaining today.`)
+                    )}
+                     {!pending && rateLimit?.error && (
+                        // <Alert variant="destructive" className="mt-8 mb-4">
+                        //     <AlertCircle className="h-4 w-4" />
+                        //     <AlertTitle className='text-red-500'>Rate Limit Reached</AlertTitle>
+                        //     <AlertDescription className='text-red-500'>{rateLimit.error}</AlertDescription>
+                        // </Alert>
+                        toast(`Rate Limit Reached: ${rateLimit.error}`)
+                    )} */}
         </div>
     );
 }

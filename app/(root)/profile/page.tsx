@@ -9,6 +9,8 @@ import { fetchProfile, updateProfileData } from "@/features/store/slices/profile
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { z } from "zod"
+import { toast } from "sonner"
+
 
 
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -20,7 +22,6 @@ import { Spinner } from "@/components/ui/spinner"
 import { profileFormSchema } from "@/features/profile/schemas"
 import { countries, languages, timezones } from "@/features/profile/data"
 import { ImageUpload } from "@/components/shared/ImageUpload"
-import { toast } from "sonner"
 import { getImageUploadUrl } from "@/features/profile/server/actions"
 
 
@@ -34,6 +35,7 @@ export default function UserProfile() {
   const profile = useAppSelector((state) => state.profile)
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isFormDirty, setIsFormDirty] = useState(false)
+
 
   const form = useForm({
     resolver: zodResolver(profileFormSchema),
@@ -142,10 +144,10 @@ export default function UserProfile() {
         })
       }
       
-      toast.success('Profile updated successfully')
+      toast("Profile updated successfully.")
       setSelectedFile(null)
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update profile')
+      toast("Failed to update profile.")
     } finally {
       setIsLoading(false)
     }
