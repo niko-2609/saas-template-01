@@ -1,6 +1,15 @@
+'use server'
+
 import { db } from "@/features/db/db"
 
 export const checkSubscriptionStatus = async (userId: string) => {
+  if (!userId) {
+    return {
+      isSubscribed: false,
+      subscriptionId: null
+    }
+  }
+
   try {
     const subscription = await db.subscription.findFirst({
       where: {
@@ -9,15 +18,22 @@ export const checkSubscriptionStatus = async (userId: string) => {
       },
       orderBy: {
         createdAt: 'desc'
+      },
+      select: {
+        id: true,
+        subId: true,
+        status: true
       }
     })
 
+    console.log("Found subscription:", subscription) // Debug log
+
     return {
-      isSubscribed: !!subscription,
-      subscriptionId: subscription?.subId
+      isSubscribed: subscription?.status === "active",
+      subscriptionId: subscription?.subId || null
     }
   } catch (error) {
-    console.error("Error checking subscription:", error)
+    console.error("Error in checkSubscriptionStatus:", error)
     return {
       isSubscribed: false,
       subscriptionId: null
