@@ -19,42 +19,48 @@ const SubscriptionContext = createContext<SubscriptionContextType>({
 })
 
 export function SubscriptionProvider({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession()
-  const [isSubscribed, setIsSubscribed] = useState(false)
+  const { data: session, status: sessionStatus } = useSession()
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null)
   const [subscriptionId, setSubscriptionId] = useState<string | null | undefined>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const checkStatus = useCallback(async () => {
-    console.log("Checking subscription status...", session?.user?.id)
-    if (session?.user?.id) {
-      try {
-        const status = await checkSubscriptionStatus(session.user.id)
-        console.log("Subscription status result:", status)
-        setIsSubscribed(!!status?.isSubscribed)
-        setSubscriptionId(status?.subscriptionId)
-      } catch (error) {
-        console.error('Error checking subscription status:', error)
-        setIsSubscribed(false)
-        setSubscriptionId(null)
-      } finally {
-        setIsLoading(false)
-      }
-    } else {
+    if (sessionStatus === 'loading') {
+      return // Don't check until session is ready
+    }
+
+    if (!session?.user?.id) {
       setIsSubscribed(false)
       setSubscriptionId(null)
       setIsLoading(false)
+      return
     }
-  }, [session?.user?.id])
+
+    try {
+      const status = await checkSubscriptionStatus(session.user.id)
+      setIsSubscribed(!!status?.isSubscribed)
+      setSubscriptionId(status?.subscriptionId)
+    } catch (error) {
+      console.error('Error checking subscription status:', error)
+      setIsSubscribed(false)
+      setSubscriptionId(null)
+    } finally {
+      setIsLoading(false)
+    }
+  }, [session?.user?.id, sessionStatus])
 
   useEffect(() => {
     checkStatus()
   }, [checkStatus])
 
+  // Treat null isSubscribed as loading state
+  const effectiveIsLoading = isLoading || isSubscribed === null
+
   return (
     <SubscriptionContext.Provider value={{ 
-      isSubscribed, 
+      isSubscribed: !!isSubscribed, 
       subscriptionId, 
-      isLoading,
+      isLoading: effectiveIsLoading,
       refreshStatus: checkStatus
     }}>
       {children}
