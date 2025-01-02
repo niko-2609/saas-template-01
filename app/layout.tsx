@@ -33,8 +33,8 @@ export default function RootLayout({
       >
         <Providers>
           <SessionProvider>
-            {children}
-            <Toaster richColors position="bottom-right" />
+              {children}
+              <Toaster richColors position="bottom-right" />
           </SessionProvider>
         </Providers>
       </body>

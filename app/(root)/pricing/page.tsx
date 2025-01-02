@@ -18,6 +18,7 @@ import { useRouter } from 'next/navigation'
 import { Spinner } from '@/components/ui/spinner';
 import { AlertCircle } from 'lucide-react';
 import { PricingCardSkeleton } from "@/features/payments/_components/pricing-card-skeleton";
+import { useSubscription } from '@/features/payments/context/subscriptionContext'
 
 interface PaymentResponse {
   razorpay_payment_id: string;
@@ -38,6 +39,7 @@ export default function Pricing() {
     error: paymentError, 
     paymentStatus 
   } = useAppSelector((state) => state.payment);
+  const { isSubscribed, subscriptionId } = useSubscription()
 
   useEffect(() => {
     // Reset payment state when component mounts
@@ -136,6 +138,21 @@ export default function Pricing() {
     );
   };
 
+  const renderPlanCard = (plan: any) => {
+    const isCurrentPlan = isSubscribed && plan.id === subscriptionId
+    
+    return (
+      <PlanCard 
+        key={plan.id} 
+        plan={plan} 
+        handleSelect={handleSelect} 
+        selectedCard={selectedCard}
+        disabled={isCurrentPlan}
+        isCurrentPlan={isCurrentPlan}
+      />
+    )
+  }
+
   const renderContent = () => {
     if (plansLoading) {
       return (
@@ -156,17 +173,12 @@ export default function Pricing() {
 
     return (
       <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
-        {plans.map((plan) => (
-          <PlanCard 
-            key={plan.id} 
-            plan={plan} 
-            handleSelect={handleSelect} 
-            selectedCard={selectedCard} 
-          />
-        ))}
+        {plans.map(renderPlanCard)}
       </div>
     );
   };
+
+  
 
   return (
     // <div className="min-h-screen flex flex-col">
