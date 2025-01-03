@@ -90,7 +90,7 @@ model Subscription {
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   status         String  
-  subId          String 
+  subId          String    @unique
   razorpaySubId  String 
   razorpayPayId  String
 

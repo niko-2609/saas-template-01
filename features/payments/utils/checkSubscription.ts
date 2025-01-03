@@ -6,7 +6,8 @@ export const checkSubscriptionStatus = async (userId: string) => {
   if (!userId) {
     return {
       isSubscribed: false,
-      subscriptionId: null
+      subscriptionId: null,
+      status: null
     }
   }
 
@@ -14,7 +15,9 @@ export const checkSubscriptionStatus = async (userId: string) => {
     const subscription = await db.subscription.findFirst({
       where: {
         userId: userId,
-        status: "active"
+        status: {
+          in: ['active', 'paused', 'cancelled', 'expired', 'pending', 'halted', 'completed']
+        }
       },
       orderBy: {
         createdAt: 'desc'
@@ -29,14 +32,16 @@ export const checkSubscriptionStatus = async (userId: string) => {
     console.log("Found subscription:", subscription) // Debug log
 
     return {
-      isSubscribed: subscription?.status === "active",
-      subscriptionId: subscription?.subId || null
+      isSubscribed: subscription?.status === "active" || subscription?.status === "paused",
+      subscriptionId: subscription?.subId || null,  
+      status: subscription?.status || null
     }
   } catch (error) {
     console.error("Error in checkSubscriptionStatus:", error)
     return {
       isSubscribed: false,
-      subscriptionId: null
+      subscriptionId: null,
+      status: null
     }
   }
 } 
