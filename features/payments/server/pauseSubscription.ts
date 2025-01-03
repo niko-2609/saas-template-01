@@ -29,7 +29,7 @@ export async function pauseSubscription(userId: string, subscriptionId: string) 
     // Check subscription status using existing function
     const { isSubscribed, subscriptionId: currentSubId, status: currentStatus } = await checkSubscriptionStatus(userId)
 
-    if (!currentStatus || !isSubscribed || currentSubId !== subscriptionId) {
+    if (currentStatus !== 'active' || !isSubscribed || currentSubId !== subscriptionId) {
       return { error: "No active subscription found" }
     }
 
