@@ -7,6 +7,7 @@ import { checkSubscriptionStatus } from '@/features/payments/utils/checkSubscrip
 interface SubscriptionContextType {
   isSubscribed: boolean
   subscriptionId: string | null | undefined
+  status: string | null | undefined
   isLoading: boolean
   refreshStatus: () => Promise<void>
 }
@@ -14,6 +15,7 @@ interface SubscriptionContextType {
 const SubscriptionContext = createContext<SubscriptionContextType>({
   isSubscribed: false,
   subscriptionId: null,
+  status: null,
   isLoading: true,
   refreshStatus: async () => {}
 })
@@ -22,6 +24,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
   const { data: session, status: sessionStatus } = useSession()
   const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null)
   const [subscriptionId, setSubscriptionId] = useState<string | null | undefined>(null)
+  const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionContextType['status']>(null)
   const [isLoading, setIsLoading] = useState(true)
 
   const checkStatus = useCallback(async () => {
@@ -40,10 +43,12 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
       const status = await checkSubscriptionStatus(session.user.id)
       setIsSubscribed(!!status?.isSubscribed)
       setSubscriptionId(status?.subscriptionId)
+      setSubscriptionStatus(status?.status)
     } catch (error) {
       console.error('Error checking subscription status:', error)
       setIsSubscribed(false)
       setSubscriptionId(null)
+      setSubscriptionStatus(null)
     } finally {
       setIsLoading(false)
     }
@@ -60,6 +65,7 @@ export function SubscriptionProvider({ children }: { children: React.ReactNode }
     <SubscriptionContext.Provider value={{ 
       isSubscribed: !!isSubscribed, 
       subscriptionId, 
+      status: subscriptionStatus,
       isLoading: effectiveIsLoading,
       refreshStatus: checkStatus
     }}>
