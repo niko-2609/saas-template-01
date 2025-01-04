@@ -1,23 +1,46 @@
 import { checkSubscriptionStatus } from '@/features/payments/utils/checkSubscription'
 import { redis } from './redis'
-
+import { db } from '@/features/db/db'
 
 export async function rateLimit(userId: string) {
-
   if (!redis) {
     throw new Error('Redis client not initialized')
   }
 
   try {
-    const { isSubscribed } = await checkSubscriptionStatus(userId)
+    // Get subscription details including plan info
+    const { isSubscribed, subscriptionId, status: subscriptionStatus} = await checkSubscriptionStatus(userId)
+
+    // Get plan details from Razorpay subscription
+    let limit = 5 // Default free tier limit
+
+    if (isSubscribed && subscriptionId && subscriptionStatus === 'active') {
+      const authToken = btoa(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`)
+      const response = await fetch(
+        `https://api.razorpay.com/v1/subscriptions/${subscriptionId}`,
+        {
+          headers: {
+            'Authorization': `Basic ${authToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      )
+
+      const data = await response.json()
+      
+      // Set limits based on plan
+      if (data?.plan_id === process.env.RAZORPAY_BASIC_PLAN_ID) {
+        limit = 20 // Basic plan limit
+      } else if (data?.plan_id === process.env.RAZORPAY_PRO_PLAN_ID) {
+        limit = 50 // Pro plan limit
+      }
+    }
+
     const date = new Date()
     const key = `rate_limit:${userId}:${date.toDateString()}`
     
     // Get current count
     const count = await redis.get<number>(key) || 0
-    
-    // Set limits based on subscription
-    const limit = isSubscribed ? 50 : 10
     
     if (count >= limit) {
       return {
