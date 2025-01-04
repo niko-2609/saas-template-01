@@ -1,40 +1,134 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+'use client'
 
-const transactions = [
-  { id: 1, date: '2023-05-01', amount: 29.99, description: 'Monthly subscription' },
-  { id: 2, date: '2023-04-01', amount: 29.99, description: 'Monthly subscription' },
-  { id: 3, date: '2023-03-01', amount: 29.99, description: 'Monthly subscription' },
-  { id: 4, date: '2023-02-01', amount: 29.99, description: 'Monthly subscription' },
-  { id: 5, date: '2023-01-01', amount: 29.99, description: 'Monthly subscription' },
-]
+import { useEffect, useState } from 'react'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useSubscription } from '../context/subscriptionContext'
+import { getInvoices } from '../server/getInvoices'
+import { format } from 'date-fns'
+import { Skeleton } from '@/components/ui/skeleton'
+
+interface Invoice {
+  id: string
+  subscription_id: string
+  payment_id: string
+  status: string
+  amount: number
+  amount_paid: number
+  issued_at: number
+  paid_at: number
+  currency: string
+  billing_start: number
+  billing_end: number
+}
 
 export default function TransactionHistory() {
+  const { subscriptionId, status } = useSubscription()
+  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    async function fetchInvoices() {
+      if (!subscriptionId || !status) {
+        return
+      }
+
+      setIsLoading(true)
+      setError(null)
+
+      try {
+        const result = await getInvoices(subscriptionId)
+        if (result.error) {
+          setError(result.error)
+        } else if (result.success) {
+          setInvoices(result.invoices)
+        }
+      } catch (err) {
+        setError(`Failed to fetch transaction history: ${err}`)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchInvoices()
+  }, [subscriptionId, status])
+
+  const formatDate = (timestamp: number) => {
+    return format(new Date(timestamp * 1000), 'MMM dd, yyyy')
+  }
+
+  const formatCurrency = (amount: number, currency: string) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: currency
+    }).format(amount)
+  }
+
   return (
-    <Card className="border-[#019992] border-2">
-      <CardHeader className="bg-[#019992] text-white">
+    <Card>
+      <CardHeader>
         <CardTitle>Transaction History</CardTitle>
-        <CardDescription className="text-gray-100">Your recent transactions for TravelAI</CardDescription>
+        <CardDescription>View your payment history and invoices</CardDescription>
       </CardHeader>
       <CardContent>
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="text-[#019992]">Date</TableHead>
-              <TableHead className="text-[#019992]">Description</TableHead>
-              <TableHead className="text-[#019992] text-right">Amount</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {transactions.map((transaction) => (
-              <TableRow key={transaction.id}>
-                <TableCell>{transaction.date}</TableCell>
-                <TableCell>{transaction.description}</TableCell>
-                <TableCell className="text-right">${transaction.amount.toFixed(2)}</TableCell>
+        {isLoading ? (
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : !status ? (
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-full" />
+          </div>
+        ) : invoices.length === 0 ? (
+          <p className="text-muted-foreground">No transactions found</p>
+        ) : (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Billing Period</TableHead>
+                <TableHead className="text-right">Amount</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {invoices.map((invoice) => (
+                <TableRow key={invoice.id}>
+                  <TableCell>{formatDate(invoice.issued_at)}</TableCell>
+                  <TableCell>
+                    <span className={`capitalize ${
+                      invoice.status === 'paid' 
+                        ? 'text-green-600' 
+                        : 'text-yellow-600'
+                    }`}>
+                      {invoice.status}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    {formatDate(invoice.billing_start)} - {formatDate(invoice.billing_end)}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {formatCurrency(invoice.amount, invoice.currency)}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        )}
       </CardContent>
     </Card>
   )
