@@ -17,11 +17,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { useSession } from 'next-auth/react'
+import { resumeSubscription } from '../server/resumeSubscription'
 
 export default function SubscriptionStatus() {
   const { status, subscriptionId, refreshStatus } = useSubscription()
   const [isLoading, setIsLoading] = useState(false)
   const [showPauseDialog, setShowPauseDialog] = useState(false)
+  const [showResumeDialog, setShowResumeDialog] = useState(false)
   const { data: session } = useSession()
   const userId = session?.user?.id
 
@@ -44,12 +46,41 @@ export default function SubscriptionStatus() {
       if (result.success) {
         toast.success(result.message)
         await refreshStatus()
-        setShowPauseDialog(false)
+        
       }
     } catch (error) {
       toast.error(`Failed to pause subscription: ${error instanceof Error ? error.message : 'Unknown error'}`)
     } finally {
       setIsLoading(false)
+      setShowPauseDialog(false)
+    }
+  }
+
+  const handleResume = async () => {
+    if (!userId || !subscriptionId) return
+
+    setIsLoading(true)
+    try {
+      const result = await resumeSubscription(userId, subscriptionId)
+      
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      if (result.warning) {
+        toast.warning(result.warning)
+      }
+
+      if (result.success) {
+        toast.success(result.message)
+        await refreshStatus()
+      }
+    } catch (error) {
+      toast.error(`Failed to resume subscription: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsLoading(false)
+      setShowResumeDialog(false)
     }
   }
 
@@ -91,13 +122,13 @@ export default function SubscriptionStatus() {
               className="bg-[#ffb001] text-white hover:bg-[#ffb001]/90"
               disabled={isLoading}
             >
-              {isLoading ? 'Processing...' : 'Pause Subscription'}
+              Pause Subscription
             </Button>
           )}
           {!isLoading && status === 'paused' && (
             <Button
-              onClick={() => setShowPauseDialog(true)}
-              className="bg-[#ffb001] text-white hover:bg-[#ffb001]/90"
+              onClick={() => setShowResumeDialog(true)}
+              className="bg-[#44ee77] text-white hover:bg-[#44ee77]/90"
               disabled={isLoading}
             >
               Resume Subscription
@@ -122,6 +153,27 @@ export default function SubscriptionStatus() {
               disabled={isLoading}
             >
               {isLoading ? 'Processing...' : 'Pause'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showResumeDialog} onOpenChange={setShowResumeDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Resume Subscription</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to resume your subscription? You will be charged according to your billing cycle.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleResume}
+              className="bg-[#44ee77] text-white hover:bg-[#44ee77]/90"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Processing...' : 'Resume'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

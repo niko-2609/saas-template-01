@@ -26,16 +26,10 @@ export async function resumeSubscription(userId: string, subscriptionId: string)
       return { error: "Too many attempts. Please try again later." }
     }
 
-    // Check subscription exists and belongs to user
-    const subscription = await db.subscription.findFirst({
-      where: {
-        userId,
-        subId: subscriptionId,
-        status: 'paused'
-      }
-    })
+    // Check subscription status using existing function
+    const { subscriptionId: currentSubId, status: currentStatus } = await checkSubscriptionStatus(userId)
 
-    if (!subscription) {
+    if (currentStatus !== 'paused' || currentSubId !== subscriptionId) {
       return { error: "No paused subscription found" }
     }
 
@@ -48,7 +42,8 @@ export async function resumeSubscription(userId: string, subscriptionId: string)
         headers: {
           'Authorization': `Basic ${authToken}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ resume_at: "now" })
       }
     )
 
@@ -71,7 +66,9 @@ export async function resumeSubscription(userId: string, subscriptionId: string)
     // Update subscription status in database
     try {
       await db.subscription.update({
-        where: { id: subscription.id },
+        where: { 
+          subId: subscriptionId
+        },
         data: { 
           status: razorpayStatus,
           updatedAt: new Date()
