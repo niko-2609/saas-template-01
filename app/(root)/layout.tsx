@@ -22,7 +22,7 @@ function Navbar() {
     <Link href={href}>
       <Button 
         variant="ghost" 
-        className={`text-md text-[#019992] min-w-[90px] relative overflow-hidden
+        className={`text-md text-[#019992] font-semibold min-w-[90px] relative overflow-hidden
           ${isLoading ? 'pointer-events-none' : ''}`}
       >
         {isLoading ? (
