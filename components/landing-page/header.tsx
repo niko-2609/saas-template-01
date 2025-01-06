@@ -1,26 +1,33 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
+'use client'
 
-export default function Header({ session }: { session: any }) {
+import { motion } from 'framer-motion'
+import { Plane } from 'lucide-react'
+import Link from 'next/link'
+
+export default function Header() {
   return (
-    <nav className="bg-white shadow-md">
-      <div className="container mx-auto px-6 py-4">
-        <div className="flex justify-between items-center">
-          <Link href="/" className="text-3xl font-bold text-blue-600">TRIPSY</Link>
-          <div className="flex space-x-4">
-            <Link href="/about">
-              <Button variant="ghost" className="text-gray-600 hover:text-blue-600 font-semibold">About Us</Button>
-            </Link>
-            {!session && (
-              <Link href="/sign-in">
-                <Button variant="outline" className="bg-blue-600 text-white hover:bg-blue-700 border-none font-semibold">Sign In</Button>
-              </Link>
-            )}
-          </div>
-        </div>
+    <motion.header 
+      className="fixed w-full z-50 bg-white/80 backdrop-blur-md shadow-sm"
+      initial={{ y: -100 }}
+      animate={{ y: 0 }}
+      transition={{ type: 'spring', stiffness: 100, damping: 20 }}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+        <Link href="/" className="flex items-center space-x-2">
+          <Plane className="h-8 w-8 text-[#019992]" />
+          <span className="text-2xl font-bold text-gray-800">Tripsy</span>
+        </Link>
+        <nav>
+          <motion.button
+            className="bg-[#019992] text-white px-4 py-2 rounded-full font-medium hover:bg-[#019992]/90 transition-colors"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            Get Started
+          </motion.button>
+        </nav>
       </div>
-    </nav>
+    </motion.header>
   )
 }
 
