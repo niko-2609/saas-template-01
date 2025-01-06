@@ -102,7 +102,7 @@ export default function TransactionHistory() {
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Billing Period</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>Amount</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -121,7 +121,7 @@ export default function TransactionHistory() {
                   <TableCell>
                     {formatDate(invoice.billing_start)} - {formatDate(invoice.billing_end)}
                   </TableCell>
-                  <TableCell className="text-right">
+                  <TableCell>
                     {formatCurrency(invoice.amount, invoice.currency)}
                   </TableCell>
                 </TableRow>

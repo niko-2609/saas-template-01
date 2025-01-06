@@ -41,7 +41,10 @@ export async function cancelSubscription(userId: string, subscriptionId: string)
         headers: {
           'Authorization': `Basic ${authToken}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({
+          cancel_at_cycle_end: 0 // Immediate cancellation
+        })
       }
     )
 

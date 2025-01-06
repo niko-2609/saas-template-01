@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useSubscription } from '../context/subscriptionContext'
 import { pauseSubscription } from '../server/pauseSubscription'
+import { cancelSubscription } from '../server/cancelSubscription'
 import { toast } from "sonner"
 import {
   AlertDialog,
@@ -24,6 +25,7 @@ export default function SubscriptionStatus() {
   const [isLoading, setIsLoading] = useState(false)
   const [showPauseDialog, setShowPauseDialog] = useState(false)
   const [showResumeDialog, setShowResumeDialog] = useState(false)
+  const [showCancelDialog, setShowCancelDialog] = useState(false)
   const { data: session } = useSession()
   const userId = session?.user?.id
 
@@ -84,6 +86,34 @@ export default function SubscriptionStatus() {
     }
   }
 
+  const handleCancel = async () => {
+    if (!userId || !subscriptionId) return
+
+    setIsLoading(true)
+    try {
+      const result = await cancelSubscription(userId, subscriptionId)
+      
+      if (result.error) {
+        toast.error(result.error)
+        return
+      }
+
+      if (result.warning) {
+        toast.warning(result.warning)
+      }
+
+      if (result.success) {
+        toast.success(result.message)
+        await refreshStatus()
+      }
+    } catch (error) {
+      toast.error(`Failed to cancel subscription: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    } finally {
+      setIsLoading(false)
+      setShowCancelDialog(false)
+    }
+  }
+
   const displayStatus = isLoading 
     ? 'Processing...' 
     : status 
@@ -117,13 +147,22 @@ export default function SubscriptionStatus() {
         </CardContent>
         <CardFooter className="flex flex-wrap gap-4">
           {!isLoading && status === 'active' && (
-            <Button
-              onClick={() => setShowPauseDialog(true)}
-              className="bg-[#ffb001] text-white hover:bg-[#ffb001]/90"
-              disabled={isLoading}
-            >
-              Pause Subscription
-            </Button>
+            <>
+              <Button
+                onClick={() => setShowPauseDialog(true)}
+                className="bg-[#ffb001] text-white hover:bg-[#ffb001]/90"
+                disabled={isLoading}
+              >
+                Pause Subscription
+              </Button>
+              <Button
+                onClick={() => setShowCancelDialog(true)}
+                className="bg-[#fb475e] text-white hover:bg-[#fb475e]/90"
+                disabled={isLoading}
+              >
+                Cancel Subscription
+              </Button>
+            </>
           )}
           {!isLoading && status === 'paused' && (
             <Button
@@ -174,6 +213,27 @@ export default function SubscriptionStatus() {
               disabled={isLoading}
             >
               {isLoading ? 'Processing...' : 'Resume'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancel Subscription</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to cancel your subscription? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>Keep Subscription</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleCancel}
+              className="bg-[#fb475e] text-white hover:bg-[#fb475e]/90"
+              disabled={isLoading}
+            >
+              {isLoading ? 'Processing...' : 'Yes, Cancel Subscription'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
