@@ -28,7 +28,7 @@ export const activateSubscription = async (userId: any, planId: any) => {
             }
         });
 
-        if (subscription) {
+        if (subscription && subscription.status !== "cancelled") {
             return { error: "User already has an active subscription" };
         }
 
