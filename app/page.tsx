@@ -288,12 +288,12 @@
 
 
 
-import Header from '@/components/landing-page/Header'
+import Header from '@/components/landing-page/header'
 import Hero from '@/components/landing-page/Hero'
 import Features from '@/components/landing-page/Features'
 import HowItWorks from '@/components/landing-page/HowItWorks'
 import CallToAction from '@/components/landing-page/CallToAction'
-import Footer from '@/components/landing-page/Footer'
+import Footer from '@/components/landing-page/footer'
 import Highlights from '@/components/landing-page/Highlights'
 // import EmailCapture from '@/components/landing-page/EmailCapture'
 
