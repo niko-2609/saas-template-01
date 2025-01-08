@@ -2,22 +2,26 @@
 
 import { motion } from 'framer-motion'
 import Image from 'next/image'
+import contentImage1 from "@/public/assets/travel-16.png";
+import contentImage2 from "@/public/assets/travel-14.webp";
+import contentImage3 from "@/public/assets/travel-17.webp";
+import highlightsImage from "@/public/assets/highlight-1.jpg";
 
 const highlights = [
   {
     title: "Discover Hidden Gems",
     description: "Our AI analyzes millions of data points to recommend off-the-beaten-path locations that match your interests.",
-    image: "/placeholder.svg?height=400&width=600",
+    image: contentImage1,
   },
   {
     title: "Personalized Experiences",
     description: "From food tours to adventure sports, we curate experiences that align with your unique preferences and travel style.",
-    image: "/placeholder.svg?height=400&width=600",
+    image: contentImage3,
   },
   {
     title: "Smart Budgeting",
     description: "Our intelligent system helps you make the most of your budget, suggesting the best value options without compromising on quality.",
-    image: "/placeholder.svg?height=400&width=600",
+    image: contentImage2,
   },
 ]
 
@@ -77,7 +81,7 @@ export default function Highlights() {
                   alt={highlight.title}
                   width={600}
                   height={400}
-                  className="rounded-lg shadow-lg"
+                  className="rounded-lg"
                 />
               </motion.div>
               <div className={`w-full md:w-1/2 ${index % 2 === 0 ? 'md:pl-12' : 'md:pr-12'}`}>
