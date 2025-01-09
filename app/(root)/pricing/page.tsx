@@ -19,6 +19,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { AlertCircle } from 'lucide-react';
 import { PricingCardSkeleton } from "@/features/payments/_components/pricing-card-skeleton";
 import { useSubscription } from '@/features/payments/context/subscriptionContext'
+import { toast } from "sonner"
 
 interface PaymentResponse {
   razorpay_payment_id: string;
@@ -52,6 +53,15 @@ export default function Pricing() {
       router.push('/payment/success');
     }
   }, [paymentStatus, router]);
+
+  useEffect(() => {
+    if (paymentError) {
+      toast.error(paymentError, {
+        duration: 5000,
+        onAutoClose: () => dispatch(resetPaymentState())
+      });
+    }
+  }, [paymentError, dispatch]);
 
   const handleSelect = async (planId: string) => {
     if (status !== "authenticated") {
@@ -116,28 +126,6 @@ export default function Pricing() {
     }
   };
 
-  // Improved error banner with auto-dismiss and better styling
-  const ErrorBanner = ({ message }: { message: string }) => {
-    useEffect(() => {
-      const timer = setTimeout(() => {
-        dispatch(resetPaymentState());
-      }, 5000);
-
-      return () => clearTimeout(timer);
-    }, []);
-
-    return (
-      <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50">
-        <div className="bg-destructive px-6 py-4 rounded-lg shadow-lg">
-          <div className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-white" />
-            <p className="text-white font-medium">{message}</p>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   const renderPlanCard = (plan: any) => {
     const isCurrentPlan = isSubscribed && plan.id === subscriptionId
     
@@ -181,41 +169,9 @@ export default function Pricing() {
   
 
   return (
-    // <div className="min-h-screen flex flex-col">
-    //   <div className="flex-grow max-w-4xl mx-auto p-6 space-y-8">
-    //     <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-
-    //     {/* Show error banner if there's an error */}
-    //     {paymentError && <ErrorBanner message={paymentError} />}
-
-    //     {/* Loading overlay for payment processing */}
-    //     {isProcessing && (
-    //       <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-    //         <div className="bg-white p-8 rounded-lg shadow-lg flex flex-col items-center">
-    //           <Spinner size="lg" />
-    //           <p className="mt-4 text-lg font-medium">Processing your payment...</p>
-    //         </div>
-    //       </div>
-    //     )}
-
-    //     <div className="text-center space-y-4">
-    //       <h1 className="text-xl font-semibold">Pricing</h1>
-    //       <h2 className="text-5xl font-bold">Choose the right plan for you</h2>
-    //       <p className="text-base text-muted-foreground max-w-xl mx-auto">
-    //         Choose an affordable plan that&apos;s packed with the best features for engaging your audience,
-    //         creating customer loyalty, and driving sales.
-    //       </p>
-    //     </div>
-
-    //     {renderContent()}
-    //   </div>
-    // </div>
-
     <div className="min-h-screen flex flex-col bg-gray-50">
       <div className="flex-grow max-w-4xl mx-auto p-6 space-y-8">
         <Script src="https://checkout.razorpay.com/v1/checkout.js" />
-
-        {paymentError && <ErrorBanner message={paymentError} />}
 
         {isProcessing && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
