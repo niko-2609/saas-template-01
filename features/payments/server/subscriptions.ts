@@ -21,15 +21,21 @@ export const activateSubscription = async (userId: any, planId: any) => {
             return { error: "User not found" };
         }
 
-        // check if user already has a subscription
+        // check if user already has a valid subscription 
         const subscription = await db.subscription.findFirst({
             where: {
                 userId: userId,
+                status: {
+                    in: ['active', 'paused', 'pending']
+                }
+            },
+            orderBy: {
+                createdAt: 'desc'
             }
         });
 
-        if (subscription && subscription.status !== "cancelled") {
-            return { error: "User already has an active subscription" };
+        if (subscription) {
+            return { error: "User already has an active subscription. Please cancel or manage your existing subscription before creating a new one." };
         }
 
         const authToken = btoa(`${process.env.RAZORPAY_KEY_ID}:${process.env.RAZORPAY_KEY_SECRET}`);
