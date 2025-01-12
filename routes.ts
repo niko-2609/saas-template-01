@@ -11,6 +11,7 @@ export const publicRoutes: string[] = [
     "/terms-of-service",
     "/contact-us",
     "/onboarding",
+    "/verify-request"
 ]
 
 

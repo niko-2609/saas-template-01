@@ -15,7 +15,8 @@ const combinedProviders = [
 export const { handlers, auth, signIn, signOut, unstable_update } = NextAuth({
     pages: {
         signIn: "/sign-in",
-        error: "/error"
+        error: "/error",
+        verifyRequest: '/verify-request'
     },
     providers: combinedProviders,
     adapter: PrismaAdapter(db) as Adapter,
