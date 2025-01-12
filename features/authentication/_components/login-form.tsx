@@ -16,11 +16,8 @@ import { signIn } from "next-auth/react"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { LoginSchema } from "../schemas";
-// import { Icons } from "@/components/icons"
-// import { Button } from "@/registry/new-york/ui/button"
-// import { Input } from "@/registry/new-york/ui/input"
-// import { Label } from "@/registry/new-york/ui/label"
-// 
+import { toast } from "sonner";
+
 
 
 
@@ -35,7 +32,7 @@ export function LoginForm({ className, ...props }: any) {
         console.log("Captured values:", values)
         await signInMagicLink(values)
       } catch (error: any) {
-        throw new Error(error)
+        toast.error(error.message)
       } finally {
         setIsLoading(false)
       }
