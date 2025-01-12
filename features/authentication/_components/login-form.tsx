@@ -28,14 +28,6 @@ export function LoginForm({ className, ...props }: any) {
   const [isLoading, setIsLoading] = React.useState<boolean>(false)
   const [isPending, startTransition] = React.useTransition()
 
-  // async function onSubmit(event: React.SyntheticEvent) {
-  //   event.preventDefault()
-  //   setIsLoading(true)
-
-  //   setTimeout(() => {
-  //     setIsLoading(false)
-  //   }, 3000)
-  // }
   const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
     startTransition(async () => {
       setIsLoading(true)
@@ -57,15 +49,20 @@ export function LoginForm({ className, ...props }: any) {
     }
   })
 
+  React.useEffect(() => {
+    return () => {
+      setIsLoading(false)
+    }
+  }, [])
+
   const handleSignIn = async () => {
-    console.log("GOOGLE CLICKED SIGN IN BUTTON")
+    setIsLoading(true)
     startTransition(async () => {
       signIn("google", {
         callbackUrl: "/dashboard",
         redirect: true,
       })
     })
-   
   }
 
   return (
@@ -113,7 +110,7 @@ export function LoginForm({ className, ...props }: any) {
         </div>
       </div>
       <Button variant="outline" type="button" disabled={isPending} onClick={() => handleSignIn()}>
-        {isPending ? (
+        {isLoading ? (
           <ImSpinner className="mr-2 h-4 w-4 animate-spin" />
         ) : (
           <FaGoogle className="mr-2 h-4 w-4" />
