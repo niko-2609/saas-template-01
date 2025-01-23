@@ -11,17 +11,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuLabel,
-    DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import { cn } from "@/lib/utils"
 import {
     Popover,
@@ -30,16 +21,17 @@ import {
 } from "@/components/ui/popover"
 import { format } from "date-fns"
 import { Libraries } from "@react-google-maps/api";
-import { CalendarIcon, ChevronDownCircle } from 'lucide-react';
+import { CalendarIcon } from 'lucide-react';
 import { Calendar } from "@/components/ui/calendar"
 import { googlePlacesAutoComplete } from '@/features/itenary-generator/server/googlePlaces';
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 
 import { formSchema } from "../schemas";
 import { useRouter } from "next/navigation";
+import { Textarea } from "@/components/ui/textarea";
 
 
 
@@ -68,19 +60,13 @@ const defaultValues = {
 };
 
 export default function GeneratorForm() {
-
-    const [sourceCityPredictions, setSourceCityPredictions] = useState<any>(null);
     const [destCityPredictions, setDestCityPredictions] = useState<any>(null);
-    const [sourceCity, setSourceCity] = useState<string>("");
     const [destCity, setDestCity] = useState<string>("");
-    const [searchSourceCitystring, setSearchSourceCityString] = useState<string>("");
     const [searchDestCitystring, setSearchDestCityString] = useState<string>("");
     const [date, setDate] = useState<{ from: Date | null; to: Date | null } | null>(
         null
     );
     const router = useRouter();
-    const [error, setError] = useState<any>();
-    const [position, setPosition] = useState<string>("");
     const [pending, setPending] = useState(false);
 
 
@@ -98,10 +84,8 @@ export default function GeneratorForm() {
             // Simulate API call
             const updatedValues = {
                 ...values,
-                source_city: sourceCity,
                 destination_city: destCity,
                 travel_dates: date,
-                travel_type: position,
             };
 
             // Redirect to the itinerary display page with the entire object as a query parameter
@@ -117,18 +101,6 @@ export default function GeneratorForm() {
     };
 
 
-    const handleSourceCityChange = async (e: any) => {
-        const value = e.target.value;
-        setSearchSourceCityString(value);
-        setSourceCity(value); // Update the sourceCity state with the current input value
-
-        if (value.length > 2) {
-            const predictions = await googlePlacesAutoComplete(value);
-            setSourceCityPredictions(predictions);
-        } else {
-            setSourceCityPredictions(null);
-        }
-    };
 
     const handleDestCityChange = async (e: any) => {
         const value = e.target.value;
@@ -147,61 +119,23 @@ export default function GeneratorForm() {
     return (
         <>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="w-full">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                     {/* Location Details Section */}
                     <div className="space-y-8">
                         <div>
-                            <h2 className="text-2xl font-semibold text-slate-800 mb-6">Location Details</h2>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-                                <FormField
-                                    control={form.control}
-                                    name="source_city"
-                                    render={({ field }) => (
-                                        <FormItem className="relative w-full">
-                                            <FormLabel className="text-base font-medium text-slate-700">From</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    value={sourceCity || searchSourceCitystring}
-                                                    onChange={handleSourceCityChange}
-                                                    placeholder="Starting from..."
-                                                    className="h-11 text-base w-full"
-                                                />
-                                            </FormControl>
-                                            {sourceCityPredictions !== null && sourceCityPredictions?.length > 0 && (
-                                                <div className="absolute z-50 w-full mt-1 bg-white rounded-md shadow-lg max-h-60 overflow-auto border border-slate-200">
-                                                    {sourceCityPredictions?.map((item: any) => (
-                                                        <div
-                                                            key={item.place_id}
-                                                            className="px-4 py-3 hover:bg-slate-50 cursor-pointer text-slate-700"
-                                                            onClick={() => {
-                                                                setSourceCityPredictions(null);
-                                                                setSourceCity(formatSuggestions(item.description));
-                                                            }}
-                                                        >
-                                                            {formatSuggestions(item.description)}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            )}
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
                                 <FormField
                                     control={form.control}
                                     name="destination_city"
                                     render={({ field }) => (
                                         <FormItem className="relative w-full">
-                                            <FormLabel className="text-base font-medium text-slate-700">To</FormLabel>
+                                            <FormLabel className="text-base font-semibold text-md text-slate-700">Destination</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     {...field}
                                                     value={destCity || searchDestCitystring}
                                                     onChange={handleDestCityChange}
-                                                    placeholder="Travelling to..."
-                                                    className="h-11 text-base w-full"
+                                                    placeholder="Where do you want to go?"
+                                                    className="w-full bg-white focus:ring-2 focus:ring-[#019992] rounded-md hover:bg-gray-50  placeholder:text-slate-400"
                                                 />
                                             </FormControl>
                                             {destCityPredictions !== null && destCityPredictions?.length > 0 && (
@@ -224,7 +158,7 @@ export default function GeneratorForm() {
                                         </FormItem>
                                     )}
                                 />
-                            </div>
+                           
                         </div>
                         <div>
                             {/* Date Selection */}
@@ -233,7 +167,7 @@ export default function GeneratorForm() {
                                 name="travel_dates"
                                 render={({ field }) => (
                                     <FormItem className='space-y-2'>
-                                        <FormLabel className='font-semibold text-lg text-slate-600'>Travel Dates</FormLabel>
+                                        <FormLabel className='font-semibold text-md text-slate-600'>Travel Dates</FormLabel>
                                         <FormControl>
                                             <Popover>
                                                 <PopoverTrigger asChild>
@@ -255,7 +189,7 @@ export default function GeneratorForm() {
                                                                 format(date.from, "LLL dd, y")
                                                             )
                                                         ) : (
-                                                            <span>Pick your travel dates</span>
+                                                            <span>MM/DD/YYYY - MM/DD/YYYY</span>
                                                         )}
                                                     </Button>
                                                 </PopoverTrigger>
@@ -280,7 +214,25 @@ export default function GeneratorForm() {
 
                         {/* Travel Preferences Section */}
                         <div>
-                            <h2 className="text-2xl font-semibold text-slate-800 mb-6">Travel Preferences</h2>
+                        <FormField
+                                    control={form.control}
+                                    name="stops_inbetween"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-base font-semibold text-md text-slate-700">Number of Travellers</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    {...field}
+                                                    type="number"
+                                                    placeholder="How many travellers?"
+                                                    className="w-full bg-white focus:ring-2 focus:ring-[#019992] rounded-md hover:bg-gray-50"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            {/* <h2 className="text-2xl font-semibold text-slate-800 mb-6">Travel Preferences</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                 <FormField
                                     control={form.control}
@@ -312,28 +264,11 @@ export default function GeneratorForm() {
                                     )}
                                 />
 
-                                <FormField
-                                    control={form.control}
-                                    name="stops_inbetween"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-base font-medium text-slate-700">Number of Stops</FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    {...field}
-                                                    type="text"
-                                                    placeholder="How many stops?"
-                                                    className="h-11 text-base w-full"
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </div>
+                              
+                            </div> */}
 
                             {/* Activities Section */}
-                            <div className="space-y-4">
+                            {/* <div className="space-y-4">
                                 <h3 className="text-2xl font-semibold text-slate-800 mb-6">Preferred Activities</h3>
                                 <div className="flex items-center justify-between gap-4">
                                     {['hiking', 'diving', 'climbing', 'sightseeing'].map((activity) => (
@@ -358,13 +293,33 @@ export default function GeneratorForm() {
                                         />
                                     ))}
                                 </div>
-                            </div>
+                            </div> */}
+                        </div>
+
+                        <div>
+                        <FormField
+                                    control={form.control}
+                                    name="stops_inbetween"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-base font-semibold text-md text-slate-700">Special Preferences</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    {...field}
+                                                    placeholder="Let us know your preferences (e.g., beach, mountains, city exploration, etc.)"
+                                                    className="w-full bg-white focus:ring-2 focus:ring-[#019992] rounded-md hover:bg-gray-50"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                         </div>
                     </div>
 
                     <Button
                         type="submit"
-                        className="w-full mt-8 h-11 text-base font-medium"
+                        className="w-full bg-[#019992] hover:bg-[#019992] text-white font-bold py-3 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
                         disabled={pending}
                     >
                         {pending ? (
@@ -373,12 +328,11 @@ export default function GeneratorForm() {
                                 <span>Submitting details...</span>
                             </div>
                         ) : (
-                            "Submit details"
+                            "Submit Preferences"
                         )}
                     </Button>
                 </form>
             </Form>
-            {error && <p className='text-destructive'>Unexpected error occured, please try again</p>}
         </>
 
     )
