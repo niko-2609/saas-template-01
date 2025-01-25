@@ -49,14 +49,16 @@ const defaultValues = {
         from: undefined,
         to: undefined
     },
-    travel_type: '',
-    stops_inbetween: '',
-    mass_tourism: false,
-    ecological: false,
-    hiking: false,
-    diving: false,
-    climbing: false,
-    sightseeing: false
+    no_of_travellers: 1,
+    special_preferences: '',
+    // travel_type: '',
+    // stops_inbetween: '',
+    // mass_tourism: false,
+    // ecological: false,
+    // hiking: false,
+    // diving: false,
+    // climbing: false,
+    // sightseeing: false
 };
 
 export default function GeneratorForm() {
@@ -80,6 +82,7 @@ export default function GeneratorForm() {
 
     const onSubmit = async (values: z.infer<typeof formSchema>) => {
         setPending(true);
+        console.log(values);
         try {
             // Simulate API call
             const updatedValues = {
@@ -128,7 +131,7 @@ export default function GeneratorForm() {
                                     name="destination_city"
                                     render={({ field }) => (
                                         <FormItem className="relative w-full">
-                                            <FormLabel className="text-base font-semibold text-md text-slate-700">Destination</FormLabel>
+                                            <FormLabel className="text-base font-semibold text-md text-[#019992]">Destination</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     {...field}
@@ -143,7 +146,7 @@ export default function GeneratorForm() {
                                                     {destCityPredictions?.map((item: any) => (
                                                         <div
                                                             key={item.place_id}
-                                                            className="px-4 py-3 hover:bg-slate-50 cursor-pointer text-slate-700"
+                                                            className="px-4 py-3 hover:bg-slate-50 cursor-pointer text-[#019992]"
                                                             onClick={() => {
                                                                 setDestCityPredictions(null);
                                                                 setDestCity(formatSuggestions(item.description));
@@ -167,7 +170,7 @@ export default function GeneratorForm() {
                                 name="travel_dates"
                                 render={({ field }) => (
                                     <FormItem className='space-y-2'>
-                                        <FormLabel className='font-semibold text-md text-slate-600'>Travel Dates</FormLabel>
+                                        <FormLabel className='font-semibold text-md text-[#019992]'>Travel Dates</FormLabel>
                                         <FormControl>
                                             <Popover>
                                                 <PopoverTrigger asChild>
@@ -216,15 +219,20 @@ export default function GeneratorForm() {
                         <div>
                         <FormField
                                     control={form.control}
-                                    name="stops_inbetween"
+                                    name="no_of_travellers"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="text-base font-semibold text-md text-slate-700">Number of Travellers</FormLabel>
+                                            <FormLabel className="text-base font-semibold text-md text-[#019992]">Number of Travellers</FormLabel>
                                             <FormControl>
                                                 <Input
                                                     {...field}
                                                     type="number"
                                                     placeholder="How many travellers?"
+                                                    value={field.value || ''}
+                                                    onChange={(e) => {
+                                                        const value = e.target.value ? parseInt(e.target.value, 10) : 0;
+                                                        field.onChange(value);
+                                                    }}
                                                     className="w-full bg-white focus:ring-2 focus:ring-[#019992] rounded-md hover:bg-gray-50"
                                                 />
                                             </FormControl>
@@ -232,6 +240,54 @@ export default function GeneratorForm() {
                                         </FormItem>
                                     )}
                                 />
+                        </div>
+
+                        <div>
+                        <FormField
+                                    control={form.control}
+                                    name="special_preferences"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="text-base font-semibold text-md text-[#019992]">Special Preferences</FormLabel>
+                                            <FormControl>
+                                                <Textarea
+                                                    {...field}
+                                                    placeholder="Let us know your preferences (e.g., beach, mountains, city exploration, etc.)"
+                                                    className="w-full bg-white focus:ring-2 focus:ring-[#019992] rounded-md hover:bg-gray-50"
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                        </div>
+                    </div>
+
+                    <Button
+                        type="submit"
+                        className="w-full bg-[#019992] hover:bg-[#019992] text-white font-bold py-3 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
+                        disabled={pending}
+                    >
+                        {pending ? (
+                            <div className="flex items-center space-x-2">
+                                <span className="animate-spin">⏳</span>
+                                <span>Submitting details...</span>
+                            </div>
+                        ) : (
+                            "Submit Preferences"
+                        )}
+                    </Button>
+                </form>
+            </Form>
+        </>
+
+    )
+}
+
+
+// OUTED FORM STARTS HERE
+
+
                             {/* <h2 className="text-2xl font-semibold text-slate-800 mb-6">Travel Preferences</h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                 <FormField
@@ -294,47 +350,3 @@ export default function GeneratorForm() {
                                     ))}
                                 </div>
                             </div> */}
-                        </div>
-
-                        <div>
-                        <FormField
-                                    control={form.control}
-                                    name="stops_inbetween"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="text-base font-semibold text-md text-slate-700">Special Preferences</FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    {...field}
-                                                    placeholder="Let us know your preferences (e.g., beach, mountains, city exploration, etc.)"
-                                                    className="w-full bg-white focus:ring-2 focus:ring-[#019992] rounded-md hover:bg-gray-50"
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                        </div>
-                    </div>
-
-                    <Button
-                        type="submit"
-                        className="w-full bg-[#019992] hover:bg-[#019992] text-white font-bold py-3 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
-                        disabled={pending}
-                    >
-                        {pending ? (
-                            <div className="flex items-center space-x-2">
-                                <span className="animate-spin">⏳</span>
-                                <span>Submitting details...</span>
-                            </div>
-                        ) : (
-                            "Submit Preferences"
-                        )}
-                    </Button>
-                </form>
-            </Form>
-        </>
-
-    )
-}
-

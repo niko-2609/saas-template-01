@@ -87,14 +87,16 @@ export default function ItineraryDisplayPage() {
             try {
                 const validatedValuesFromParams = formSchema.parse(data)
                 setValidatedValues(validatedValuesFromParams);
-                const { output } = await streamAIResponse(validatedValuesFromParams);
+                const { output, error } = await streamAIResponse(validatedValuesFromParams);
+                if (error) {
+                    throw new Error(error);
+                }
                 for await (const delta of readStreamableValue(output)) {
                     setItinerary(itinerary => `${itinerary}${delta}`);
                 }
                 setPending(false);
             } catch (error) {
-                console.error('Error during itinerary generation:', error);
-                setError('Failed to generate itinerary. Please try again.');
+                toast.error(`${error}`);
                 setPending(false);
             }
         });
