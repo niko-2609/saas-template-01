@@ -2,7 +2,7 @@
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, Users, ArrowLeft, Loader2, AlertTriangle, Plane, Train, Car, Ship, MapPin, Navigation, Compass, Leaf, Mountain, Waves, FootprintsIcon as ClimbingShoe, Camera, UserRoundIcon } from 'lucide-react'
+import { Calendar, Users, ArrowLeft, Loader2, AlertTriangle, Plane, Train, Car, Ship, MapPin, Navigation, Compass, Leaf, Mountain, Waves, FootprintsIcon as ClimbingShoe, Camera, UserRoundIcon, MessageCircle } from 'lucide-react'
 import { useState } from "react"
 import { TripSummaryProps } from "../schemas"
 import { format } from "date-fns";
@@ -63,7 +63,7 @@ export default function TripSummary({
   };
 
 
-  if (!tripDetails?.source_city || !tripDetails?.destination_city || !tripDetails?.travel_dates?.from || !tripDetails?.travel_dates?.to || !tripDetails?.travel_type) {
+  if ( !tripDetails?.destination_city || !tripDetails?.travel_dates?.from || !tripDetails?.travel_dates?.to || !tripDetails?.no_of_travellers) {
     return (
       <Card className="w-full bg-white border border-gray-200 shadow-sm">
       <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
@@ -95,41 +95,28 @@ export default function TripSummary({
       <CardContent className="space-y-6">
         <div className="flex items-center space-x-2">
           <MapPin className="w-5 h-5 text-muted-foreground" />
-          <span className="font-medium">From:</span>
-          <span>{tripDetails.source_city}</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Navigation className="w-5 h-5 text-muted-foreground" />
           <span className="font-medium">To:</span>
           <span>{tripDetails.destination_city}</span>
         </div>
+        {/* <div className="flex items-center space-x-2">
+          <Navigation className="w-5 h-5 text-muted-foreground" />
+          <span className="font-medium">To:</span>
+          <span>{tripDetails.destination_city}</span>
+        </div> */}
         <div className="flex items-center space-x-2">
           <Calendar className="w-5 h-5 text-muted-foreground" />
           <span className="font-medium">Dates:</span>
           <span>{formatDate(tripDetails.travel_dates?.from)} to {formatDate(tripDetails.travel_dates?.to)}</span>
+        </div>  
+        <div className="flex items-center space-x-2">
+          <Users className="w-5 h-5 text-muted-foreground" />
+          <span className="font-medium">No. of Travellers:</span>
+          <span>{tripDetails.no_of_travellers}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <TravelTypeIcon type={tripDetails.travel_type} />
-          <span className="font-medium">Travel Type:</span>
-          <span>{tripDetails.travel_type}</span>
-        </div>
-        {tripDetails.stops_inbetween && (
-          <div className="flex items-center space-x-2">
-            <Compass className="w-5 h-5 text-muted-foreground" />
-            <span className="font-medium">Stops In-between:</span>
-            <span>{tripDetails.stops_inbetween}</span>
-          </div>
-        )}
-        <div>
-          <span className="font-medium font-bold mb-2 block">Preferences:</span>
-          <div className="flex flex-1 justify-between mt-5">
-            {/* <PreferenceBadge label="Mass Tourism" value={tripDetails?.mass_tourism} icon={Users} /> */}
-            {/* <PreferenceBadge label="Ecological" value={tripDetails?.ecological} icon={Leaf} /> */}
-            <PreferenceBadge label="Hiking" value={tripDetails?.hiking} icon={Mountain} />
-            <PreferenceBadge label="Diving" value={tripDetails?.diving} icon={Waves} />
-            <PreferenceBadge label="Climbing" value={tripDetails?.climbing} icon={ClimbingShoe} />
-            <PreferenceBadge label="Sightseeing" value={tripDetails?.sightseeing} icon={Camera} />
-          </div>
+          <MessageCircle className="w-5 h-5 text-muted-foreground" />
+          <span className="font-medium">Special Preferences:</span>
+          <span>{tripDetails.special_preferences}</span>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between">
@@ -151,65 +138,3 @@ export default function TripSummary({
     </Card>
   )
 }
-
-{/* <Card className="w-full bg-white border border-gray-200 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold">Trip Summary</CardTitle>
-      </CardHeader>
-      <CardContent className="flex flex-col items-center justify-center p-8 space-y-4">
-        <div className="flex space-x-8">
-        <div className="flex items-center space-x-2">
-          <MapPin className="w-5 h-5 text-muted-foreground" />
-          <span className="font-medium">From:</span>
-          <span>{tripDetails.source_city}</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Navigation className="w-5 h-5 text-muted-foreground" />
-          <span className="font-medium">To:</span>
-          <span>{tripDetails.destination_city}</span>
-        </div>
-        </div>
-        <div className="flex items-center space-x-2">
-          <Calendar className="w-5 h-5 text-muted-foreground" />
-          <span className="font-medium">Dates:</span>
-          <span>{formatDate(tripDetails.travel_dates?.from)} to {formatDate(tripDetails.travel_dates?.to)}</span>
-        </div>
-        <div className="flex items-center space-x-2">
-          <TravelTypeIcon type={tripDetails.travel_type} />
-          <span className="font-medium">Travel Type:</span>
-          <span>{tripDetails.travel_type}</span>
-        </div>
-        {tripDetails.stops_inbetween && (
-          <div className="flex items-center space-x-2">
-            <Compass className="w-5 h-5 text-muted-foreground" />
-            <span className="font-medium">Stops In-between:</span>
-            <span>{tripDetails.stops_inbetween}</span>
-          </div>
-        )}
-        <div>
-          <span className="font-medium font-bold mb-2 block">Preferences:</span>
-          <div className="flex flex-1 justify-between mt-5">
-  <PreferenceBadge label="Hiking" value={tripDetails?.hiking} icon={Mountain} />
-            <PreferenceBadge label="Diving" value={tripDetails?.diving} icon={Waves} />
-            <PreferenceBadge label="Climbing" value={tripDetails?.climbing} icon={ClimbingShoe} />
-            <PreferenceBadge label="Sightseeing" value={tripDetails?.sightseeing} icon={Camera} />
-          </div>
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={onEditDetails}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Edit Details
-        </Button>
-        <Button onClick={handleGenerateItinerary} disabled={isGenerating}>
-          {isGenerating ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Generating Itinerary...
-            </>
-          ) : (
-            'Generate Itinerary'
-          )}
-        </Button>
-      </CardFooter>
-</Card> */}

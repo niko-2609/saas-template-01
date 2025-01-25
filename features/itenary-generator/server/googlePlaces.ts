@@ -5,7 +5,6 @@ const client  = new Client();
 
 export const googlePlacesAutoComplete = async(input: string) => {
  try {
-    console.log(process.env.GOOGLE_API_KEY)
     const response = await client.placeAutocomplete({
         params: {
             input,
