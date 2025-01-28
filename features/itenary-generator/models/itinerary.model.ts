@@ -27,21 +27,13 @@ export interface IItinerary extends Document {
   createdAt: Date;
   updatedAt?: Date;
   tripDetails: {
-    sourceCity: string;
     destinationCity: string;
     travelDates: {
       from: Date;
       to: Date;
     };
-    travelType: string;
-    preferences: {
-      massTourism?: boolean;
-      ecological?: boolean;
-      hiking?: boolean;
-      diving?: boolean;
-      climbing?: boolean;
-      sightseeing?: boolean;
-    };
+    noOfTravellers: number;
+    specialPreferences: string;
   };
   logisticalInfo: ILogisticalInfo[];
   days: IDay[];
@@ -76,21 +68,13 @@ const ItinerarySchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: Date,
   tripDetails: {
-    sourceCity: { type: String, required: true },
     destinationCity: { type: String, required: true },
     travelDates: {
       from: { type: Date, required: true },
       to: { type: Date, required: true }
     },
-    travelType: String,
-    preferences: {
-      massTourism: Boolean,
-      ecological: Boolean,
-      hiking: Boolean,
-      diving: Boolean,
-      climbing: Boolean,
-      sightseeing: Boolean
-    }
+    noOfTravellers: { type: Number, required: true },
+    specialPreferences: { type: String, required: false }
   },
   logisticalInfo: [LogisticalInfoSchema],
   days: [DaySchema],
