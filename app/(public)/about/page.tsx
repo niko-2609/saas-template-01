@@ -149,7 +149,6 @@ export default function AboutUs() {
         </div>
       </section>
     </div>
-    <BackToHomeButton />
    </>
   )
 }

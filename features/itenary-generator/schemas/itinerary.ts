@@ -31,21 +31,13 @@ export const ItinerarySchema = z.object({
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().optional(),
   tripDetails: z.object({
-    sourceCity: z.string(),
     destinationCity: z.string(),
     travelDates: z.object({
       from: z.date(),
       to: z.date()
     }),
-    travelType: z.string(),
-    preferences: z.object({
-      massTourism: z.boolean().optional(),
-      ecological: z.boolean().optional(),
-      hiking: z.boolean().optional(),
-      diving: z.boolean().optional(),
-      climbing: z.boolean().optional(),
-      sightseeing: z.boolean().optional()
-    })
+    noOfTravellers: z.number(),
+    specialPreferences: z.string().optional()
   }),
   logisticalInfo: z.array(LogisticalInfoSchema),
   days: z.array(DaySchema),

@@ -18,21 +18,13 @@ export async function saveItinerary(
   const itinerary = await ItineraryModel.create({
     userId,
     tripDetails: {
-      sourceCity: tripDetails.source_city,
       destinationCity: tripDetails.destination_city,
       travelDates: {
         from: tripDetails.travel_dates?.from,
         to: tripDetails.travel_dates?.to
       },
-      travelType: tripDetails.travel_type,
-      preferences: {
-        massTourism: tripDetails.mass_tourism,
-        ecological: tripDetails.ecological,
-        hiking: tripDetails.hiking,
-        diving: tripDetails.diving,
-        climbing: tripDetails.climbing,
-        sightseeing: tripDetails.sightseeing
-      }
+      noOfTravellers: tripDetails.no_of_travellers,
+      specialPreferences: tripDetails.special_preferences
     },
     logisticalInfo,
     days,
