@@ -144,9 +144,19 @@ export default function Pricing() {
   const renderContent = () => {
     if (plansLoading) {
       return (
-        <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch bg-gray-50">
-          <PricingCardSkeleton />
-          <PricingCardSkeleton />
+        <div className="space-y-8">
+          {/* Loading state header */}
+          <div className="text-center space-y-4">
+            <div className="w-24 h-6 mx-auto bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer rounded" />
+            <div className="w-64 h-8 mx-auto bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer rounded" />
+            <div className="w-96 h-4 mx-auto bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer rounded" />
+          </div>
+
+          {/* Loading state cards */}
+          <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
+            <PricingCardSkeleton />
+            <PricingCardSkeleton />
+          </div>
         </div>
       );
     }
@@ -160,8 +170,18 @@ export default function Pricing() {
     }
 
     return (
-      <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
+      <div className="flex flex-col gap-8 justify-center items-stretch">
+         <div className="text-center space-y-4">
+          <h1 className="text-xl font-semibold text-[#019992]">Pricing</h1>
+          <h2 className="text-4xl font-bold text-gray-800">Choose the right plan for you</h2>
+          <p className="text-base text-gray-600 max-w-xl mx-auto">
+            Choose an affordable plan that&apos;s packed with the best features for engaging your audience,
+            creating customer loyalty, and driving sales.
+          </p>
+        </div>
+        <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
         {plans.map(renderPlanCard)}
+        </div>
       </div>
     );
   };
@@ -181,16 +201,6 @@ export default function Pricing() {
             </div>
           </div>
         )}
-
-        <div className="text-center space-y-4">
-          <h1 className="text-xl font-semibold text-[#019992]">Pricing</h1>
-          <h2 className="text-4xl font-bold text-gray-800">Choose the right plan for you</h2>
-          <p className="text-base text-gray-600 max-w-xl mx-auto">
-            Choose an affordable plan that&apos;s packed with the best features for engaging your audience,
-            creating customer loyalty, and driving sales.
-          </p>
-        </div>
-
         {renderContent()}
       </div>
     </div>

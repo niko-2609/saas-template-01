@@ -1,31 +1,30 @@
-import { Skeleton } from "@/components/ui/skeleton";
 
 export function PricingCardSkeleton() {
   return (
-    <div className="w-full md:w-[45%] rounded-xl border border-slate-700/50 bg-slate-800 shadow-sm h-full">
-      <div className="p-6 flex flex-col h-full">
+    <div className="w-full md:w-[75%] rounded-xl border border-gray-200 bg-white shadow-sm">
+      <div className="p-6 flex flex-col h-full w-full space-y-6">
         {/* Header */}
-        <div className="space-y-4 mb-6">
+        <div className="space-y-4">
           <div className="space-y-2">
-            <Skeleton className="h-5 w-20 bg-slate-700/50" />
-            <Skeleton className="h-8 w-28 bg-slate-700/50" />
+            <div className="h-6 w-24 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer rounded" />
+            <div className="h-8 w-32 bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer rounded" />
           </div>
-          <Skeleton className="h-4 w-[80%] bg-slate-700/50" />
+          <div className="h-4 w-[80%] bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer rounded" />
         </div>
 
-        {/* Features - This will take up the flexible space */}
+        {/* Features */}
         <div className="space-y-3 flex-grow">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="flex items-center gap-2">
-              <Skeleton className="h-4 w-4 rounded-full bg-slate-700/50" />
-              <Skeleton className="h-4 w-[140px] bg-slate-700/50" />
+              <div className="h-5 w-5 rounded-full bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer" />
+              <div className="h-4 w-[80%] bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer rounded" />
             </div>
           ))}
         </div>
 
-        {/* Button - This will stay at the bottom */}
+        {/* Button */}
         <div className="mt-6">
-          <Skeleton className="h-10 w-full rounded-md bg-slate-700/50" />
+          <div className="h-10 w-full rounded-md bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer" />
         </div>
       </div>
     </div>
