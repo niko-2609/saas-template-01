@@ -142,9 +142,9 @@ export default function Pricing() {
   }
 
   const renderContent = () => {
-    if (plansLoading) {
+    if (true) {
       return (
-        <div className="space-y-8">
+        <div className="space-y-8 w-full">
           {/* Loading state header */}
           <div className="text-center space-y-4">
             <div className="w-24 h-6 mx-auto bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100 animate-shimmer rounded" />
@@ -153,7 +153,7 @@ export default function Pricing() {
           </div>
 
           {/* Loading state cards */}
-          <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
+          <div className="flex flex-col md:flex-row gap-8 justify-center">
             <PricingCardSkeleton />
             <PricingCardSkeleton />
           </div>
