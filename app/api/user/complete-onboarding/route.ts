@@ -1,25 +1,35 @@
-import { NextResponse } from 'next/server'
+"use server"
+import { auth } from "@/auth"
+import { NextResponse } from "next/server"
 import { db } from "@/features/db/db"
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const { userId } = await request.json()
+    const session = await auth()
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
     }
 
-    await db.user.update({
-      where: { id: userId },
-      data: { hasCompletedOnboarding: true }
+    const { phone, language, username } = await req.json()
+
+    const updatedUser = await db.user.update({
+      where: { id: session.user.id },
+      data: {
+        phone,
+        language,
+        username,
+      },
     })
 
-    return NextResponse.json({ success: true })
-
+    return NextResponse.json({ success: true, user: updatedUser })
   } catch (error) {
     console.error('Error completing onboarding:', error)
     return NextResponse.json(
-      { error: 'Internal server error' }, 
+      { error: "Internal Server Error" },
       { status: 500 }
     )
   }

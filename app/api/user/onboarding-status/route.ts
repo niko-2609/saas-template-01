@@ -1,29 +1,42 @@
-import { NextResponse } from 'next/server'
+import { auth } from "@/auth"
 import { db } from "@/features/db/db"
+import { NextResponse } from "next/server"
 
-export async function GET(request: Request) {
+
+export async function GET() {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId')
+    const session = await auth()
 
-    if (!userId) {
-      return NextResponse.json({ error: 'User ID is required' }, { status: 400 })
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized" },
+        { status: 401 }
+      )
     }
 
     const user = await db.user.findUnique({
-      where: { id: userId },
-      select: { hasCompletedOnboarding: true }
+      where: { id: session.user.id },
+      select: {
+        phone: true,
+        language: true,
+        username: true,
+      },
     })
 
-    return NextResponse.json({ 
-      hasCompletedOnboarding: user?.hasCompletedOnboarding ?? false 
-    })
+    const isOnboardingComplete = !!(
+      user?.phone && 
+      user?.language && 
+      user?.username 
 
+    )
+
+    return NextResponse.json({ isOnboardingComplete })
   } catch (error) {
     console.error('Error checking onboarding status:', error)
     return NextResponse.json(
-      { error: 'Internal server error' }, 
-      { status: 500 }
+      { error: "Internal Server Error",
+        status: 500
+       },
     )
   }
 } 
