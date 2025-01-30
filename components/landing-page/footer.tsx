@@ -24,13 +24,13 @@ export default function Footer() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
-            <Link href="#" className="text-gray-600 hover:text-gray-800 transition-colors">
+            <Link href="/about" className="text-gray-600 hover:text-gray-800 transition-colors">
               About
             </Link>
-            <Link href="#" className="text-gray-600 hover:text-gray-800 transition-colors">
+            <Link href="/privacy-policy" className="text-gray-600 hover:text-gray-800 transition-colors">
               Privacy
             </Link>
-            <Link href="#" className="text-gray-600 hover:text-gray-800 transition-colors">
+            <Link href="/terms-of-service" className="text-gray-600 hover:text-gray-800 transition-colors">
               Terms
             </Link>
           </motion.nav>
