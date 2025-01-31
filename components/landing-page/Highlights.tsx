@@ -5,7 +5,6 @@ import Image from 'next/image'
 import contentImage1 from "@/public/assets/travel-16.png";
 import contentImage2 from "@/public/assets/travel-14.webp";
 import contentImage3 from "@/public/assets/travel-17.webp";
-import highlightsImage from "@/public/assets/highlight-1.jpg";
 
 const highlights = [
   {

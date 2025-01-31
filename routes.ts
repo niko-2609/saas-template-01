@@ -5,12 +5,12 @@
  */
 export const publicRoutes: string[] = [
     "/",
-    "/sign-in",
     "/about",
+    "/pricing",
+    "/sign-in",
     "/privacy-policy",
     "/terms-of-service",
     "/contact-us",
-    "/onboarding",
     "/verify-request"
 ]
 
@@ -21,8 +21,9 @@ export const publicRoutes: string[] = [
  * @type {string[]}
  */
 export const authRoutes: string[] = [
-    "/auth/sign-in",
+    "/sign-in",
     "/sign-up",
+    "/error",
 ]
 
 
@@ -46,4 +47,4 @@ export const DEFAULT_LOGIN_REDIRECT: string = "/dashboard"
  * The default redirect path when user is not logged in
  * @type {string}
  */
-export const DEFAULT_PUBLIC_REDIRECT: string = "/"
+export const DEFAULT_PUBLIC_REDIRECT: string = "/sign-in"
