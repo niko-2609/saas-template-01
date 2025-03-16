@@ -1,5 +1,4 @@
 // components/Layout.js
-// 
 
 "use client"
 
@@ -37,7 +36,9 @@ function Navbar() {
     return (
       <nav className="sticky top-0 z-50 bg-background shadow-sm">
         <div className="max-w-7xl mx-auto py-4 px-8 flex justify-between items-center">
-          <h1 className="text-3xl text-[#019992] font-bold">Tripsy</h1>
+          <Link href="/">
+              <h1 className="text-3xl text-[#019992] font-bold">Tripsy</h1>
+          </Link>
           <div className="flex items-center space-x-6 font-semibold">
             <NavButton href="#" isLoading />
             <NavButton href="#" isLoading />

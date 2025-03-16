@@ -42,6 +42,7 @@ export default auth(async (req) => {
     }
 
     // Second layer: Onboarding checks (only for authenticated users)
+    /* Temporarily disabled onboarding
     if (isLoggedIn && !isPublicRoute && nextUrl.pathname !== "/onboarding") {
         try {
             // Use absolute URL with protocol
@@ -70,6 +71,7 @@ export default auth(async (req) => {
             return NextResponse.next();
         }
     }
+    */
 
     return NextResponse.next();
 })

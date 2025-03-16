@@ -12,7 +12,11 @@ const nextConfig = {
               hostname: 'lh3.googleusercontent.com',
             },
         ],
-      },
+        formats: ['image/avif', 'image/webp'],
+        dangerouslyAllowSVG: true,
+        contentDispositionType: 'attachment',
+        contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    },
 };
 
 export default nextConfig;

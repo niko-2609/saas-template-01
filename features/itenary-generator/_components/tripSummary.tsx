@@ -90,12 +90,12 @@ export default function TripSummary({
   return (
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold">Trip Summary</CardTitle>
+        <CardTitle className="text-2xl font-bold text-[#019992]">Trip Summary</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center space-x-2">
-          <MapPin className="w-5 h-5 text-muted-foreground" />
-          <span className="font-medium">To:</span>
+          <MapPin color="#019992" className="w-5 h-5 text-muted-foreground" />
+          <span className="font-semibold text-[#019992]">To:</span>
           <span>{tripDetails.destination_city}</span>
         </div>
         {/* <div className="flex items-center space-x-2">
@@ -104,30 +104,30 @@ export default function TripSummary({
           <span>{tripDetails.destination_city}</span>
         </div> */}
         <div className="flex items-center space-x-2">
-          <Calendar className="w-5 h-5 text-muted-foreground" />
-          <span className="font-medium">Dates:</span>
+          <Calendar color="#019992" className="w-5 h-5 text-muted-foreground" />
+          <span className="font-semibold text-[#019992]">Dates:</span>
           <span>{formatDate(tripDetails.travel_dates?.from)} to {formatDate(tripDetails.travel_dates?.to)}</span>
         </div>  
         <div className="flex items-center space-x-2">
-          <Users className="w-5 h-5 text-muted-foreground" />
-          <span className="font-medium">No. of Travellers:</span>
+          <Users color="#019992" className="w-5 h-5 text-muted-foreground" />
+          <span className="font-semibold text-[#019992]">No. of Travellers:</span>
           <span>{tripDetails.no_of_travellers}</span>
         </div>
         <div className="flex items-center space-x-2">
-          <MessageCircle className="w-5 h-5 text-muted-foreground" />
-          <span className="font-medium">Special Preferences:</span>
+          <MessageCircle color="#019992" className="w-5 h-5 text-muted-foreground" />
+          <span className="font-semibold text-[#019992]">Special Preferences:</span>
           <span>{tripDetails.special_preferences}</span>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between">
-        <Button variant="outline" onClick={onEditDetails}>
-          <ArrowLeft className="w-4 h-4 mr-2" />
+        <Button variant="outline" onClick={onEditDetails} className="text-[#019992] font-semibold">
+          <ArrowLeft color="#019992" className="w-4 h-4 mr-2" />
           Edit Details
         </Button>
-        <Button onClick={handleGenerateItinerary} disabled={isGenerating || isLoading}>
+        <Button onClick={handleGenerateItinerary} disabled={isGenerating || isLoading} className="bg-[#019992] hover:bg-[#018880] font-semibold text-white transition-colors duration-300">
           {isLoading ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" color="#019992"/>
               Generating Itinerary...
             </>
           ) : (

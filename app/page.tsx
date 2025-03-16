@@ -6,7 +6,7 @@
 // import { Input } from '@/components/ui/input';
 // import { HelpCircleIcon } from 'lucide-react';
 // import { TypewriterEffect } from "@/components/ui/typewriter-effect";
-// import Image from 'next/image';
+import Image from 'next/image';
 // import { useSession } from "next-auth/react";
 
 // import contentImage1 from "@/public/assets/travel-16.png";
@@ -295,6 +295,8 @@ import HowItWorks from '@/components/landing-page/HowItWorks'
 import CallToAction from '@/components/landing-page/CallToAction'
 import Footer from '@/components/landing-page/footer'
 import Highlights from '@/components/landing-page/Highlights'
+import FeatureDemo from '@/components/landing-page/FeatureDemo'
+// import TryItNowSection from '@/components/landing-page/TryItNowSection'
 // import EmailCapture from '@/components/landing-page/EmailCapture'
 
 export default function Home() {
@@ -303,6 +305,8 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
+        <FeatureDemo />
+        {/* <TryItNowSection /> */}
         <Features />
         <Highlights />
         <HowItWorks />

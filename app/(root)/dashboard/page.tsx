@@ -13,7 +13,7 @@ import { format } from "date-fns"
 import { useRouter } from "next/navigation"
 import { Spinner } from "@/components/ui/spinner"
 import { FaSuitcase } from "react-icons/fa"
-import { Skeleton } from "@/components/ui/skeleton"
+// import { Skeleton } from "@/components/ui/skeleton"
 
 export default function DashboardPage() {
   const dispatch = useAppDispatch();
