@@ -6,7 +6,7 @@
 // import { Input } from '@/components/ui/input';
 // import { HelpCircleIcon } from 'lucide-react';
 // import { TypewriterEffect } from "@/components/ui/typewriter-effect";
-import Image from 'next/image';
+// import Image from 'next/image';
 // import { useSession } from "next-auth/react";
 
 // import contentImage1 from "@/public/assets/travel-16.png";
