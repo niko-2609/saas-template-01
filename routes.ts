@@ -48,3 +48,6 @@ export const DEFAULT_LOGIN_REDIRECT: string = "/dashboard"
  * @type {string}
  */
 export const DEFAULT_PUBLIC_REDIRECT: string = "/sign-in"
+
+export const onboardingUrl = ''; // Disabled onboarding
+// export const onboardingUrl = '/onboarding';

@@ -1,6 +1,6 @@
 import { checkSubscriptionStatus } from '@/features/payments/utils/checkSubscription'
 import { redis } from './redis'
-import { db } from '@/features/db/db'
+
 
 export async function rateLimit(userId: string) {
   if (!redis) {

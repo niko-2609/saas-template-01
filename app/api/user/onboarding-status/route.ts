@@ -35,6 +35,7 @@ export async function GET() {
       user?.onboardingCompleted
     )
 
+    console.log("isOnboardingComplete", isOnboardingComplete)
     // Return the onboarding status
     return NextResponse.json({ isOnboardingComplete })
 
